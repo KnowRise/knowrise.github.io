@@ -26,10 +26,10 @@ export default function WorkCard({ work, direction }) {
         </div>
         
         <a 
-          href={work.workLink} 
-          target="_blank" 
+          href={work.workLink}
+          target="blank" 
           rel="noopener noreferrer"
-          className="inline-block mt-2 font-semibold text-green-400 hover:text-green-300 transition"
+          className="mt-2 font-semibold text-green-500 hover:text-green-300 hover:border-b transition"
         >
           Lihat Detail &rarr;
         </a>

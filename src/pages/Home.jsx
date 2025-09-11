@@ -46,8 +46,8 @@ export default function Home() {
         <div className="flex flex-col gap-[2rem] text-[18px]">
           <div className="flex gap-[1rem] items-center">
             <p>You can find me</p>
-            <FontAwesomeIcon icon={faInstagram} />
-            <FontAwesomeIcon icon={faGithub}></FontAwesomeIcon>
+            <a href="https://www.instagram.com/rifaa_srjdn/" target="blank"><FontAwesomeIcon icon={faInstagram} /></a>
+            <a href="https://github.com/KnowRise" target="blank"><FontAwesomeIcon icon={faGithub}></FontAwesomeIcon></a>
           </div>
         </div>
       </div>

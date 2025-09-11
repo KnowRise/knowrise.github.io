@@ -4,7 +4,7 @@
     "title": "COVID-19 Data Analysis",
     "imageSrc": "/img/AnalystCovid.png",
     "description": "An analysis of COVID-19 data in Indonesia from March 2020 to September 2022, showing daily cases, regional charts, and other key metrics.",
-    "projectLink": "https://covid-19-visualization.streamlit.app/",
+    "workLink": "https://covid-19-visualization.streamlit.app/",
     "tags": ["Python", "Pandas", "Matplotlib", "Streamlit", "Data Science"]
   }
 ]   

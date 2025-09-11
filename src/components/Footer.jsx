@@ -7,11 +7,11 @@ export default function Footer() {
           <p>Stay Positive and Be Yourself</p>
           <p>
             Developed by me using{" "}
-            <a href="https://react.dev/" className="font-bold border-b hover:border-0">
+            <a href="https://react.dev/" target="blank" className="font-bold border-b hover:border-0">
               React
             </a>{" "}
             and{" "}
-            <a href="https://tailwindcss.com/" className="font-bold border-b hover:border-0">
+            <a href="https://tailwindcss.com/" target="blank" className="font-bold border-b hover:border-0">
               Tailwind CSS
             </a>
             . Spot an issue?{" "}
