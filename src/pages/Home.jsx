@@ -8,10 +8,15 @@ export default function Home() {
       <div className="flex flex-col gap-[2rem] py-[4rem]">
         <div className="flex items-center gap-[24px]">
           <div className="flex flex-col max-w-[70%] gap-[1rem]">
-            <h1 className="text-[48px] font-montserrat">
-              Muhammad <span className="font-bold">Rifaa </span>Siraajuddin
-              Sugandi
-            </h1>
+            <div className="flex flex-col gap-0">
+              <h1 className="text-[48px] font-montserrat">
+                Muhammad <span className="font-bold">Rifaa </span>Siraajuddin
+                Sugandi
+              </h1>
+              <h2 className="text-[32px] font-libertinus-keyboard">
+                Backend Developer
+              </h2>
+            </div>
             <p className="text-[16px]">
               A 2025 graduate from SMKN 2 Sukabumi with a specialization in
               Software Engineering. As a Junior Backend Developer at a local
@@ -46,8 +51,12 @@ export default function Home() {
         <div className="flex flex-col gap-[2rem] text-[18px]">
           <div className="flex gap-[1rem] items-center">
             <p>You can find me</p>
-            <a href="https://www.instagram.com/rifaa_srjdn/" target="blank"><FontAwesomeIcon icon={faInstagram} /></a>
-            <a href="https://github.com/KnowRise" target="blank"><FontAwesomeIcon icon={faGithub}></FontAwesomeIcon></a>
+            <a href="https://www.instagram.com/rifaa_srjdn/" target="blank">
+              <FontAwesomeIcon icon={faInstagram} />
+            </a>
+            <a href="https://github.com/KnowRise" target="blank">
+              <FontAwesomeIcon icon={faGithub}></FontAwesomeIcon>
+            </a>
           </div>
         </div>
       </div>

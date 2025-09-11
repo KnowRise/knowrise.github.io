@@ -13,7 +13,7 @@ export default function WorkCard({ work, direction }) {
 
       {/* BAGIAN TEKS */}
       <div className={`w-full md:w-1/2 ${isRightImage ? 'md:order-1' : 'md:order-2'}`}>
-        <h3 className="text-2xl font-bold text-white mb-3">{work.title}</h3>
+        <h3 className="text-[24px] font-bold text-white mb-3">{work.title}</h3>
         <p className="text-gray-300 mb-4">{work.description}</p>
         
         {/* BAGIAN TAGS */}
