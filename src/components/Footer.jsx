@@ -5,7 +5,7 @@ export default function Footer() {
         <h1 className="text-[24px] font-bold">KnowRise</h1>
         <div className="text-[12px] flex flex-col items-end">
           <p>Stay Positive and Be Yourself</p>
-          <p>
+          <p className="text-end">
             Developed by me using{" "}
             <a href="https://react.dev/" target="blank" className="font-bold border-b hover:border-0">
               React

@@ -5,7 +5,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="flex justify-between items-end">
+      <nav className="flex flex-col md:flex-row md:justify-between md:items-end">
         <div className="flex flex-col">
           <Link to="/">
             <h1 className="text-[24px] font-bold">KnowRise</h1>

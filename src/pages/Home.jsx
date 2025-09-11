@@ -6,14 +6,14 @@ export default function Home() {
   return (
     <>
       <div className="flex flex-col gap-[2rem] py-[4rem]">
-        <div className="flex items-center gap-[24px]">
-          <div className="flex flex-col max-w-[70%] gap-[1rem]">
+        <div className="flex flex-col md:flex-row items-center gap-[24px]">
+          <div className="flex flex-col md:max-w-[70%] gap-[1rem] order-2 md:order-1">
             <div className="flex flex-col gap-0">
-              <h1 className="text-[48px] font-montserrat">
+              <h1 className="text-[24px] md:text-[48px] font-montserrat">
                 Muhammad <span className="font-bold">Rifaa </span>Siraajuddin
                 Sugandi
               </h1>
-              <h2 className="text-[32px] font-libertinus-keyboard">
+              <h2 className="text-[12px] md:text-[32px] font-libertinus-keyboard">
                 Backend Developer
               </h2>
             </div>
@@ -35,7 +35,7 @@ export default function Home() {
               commitment to continuous learning.
             </p>
           </div>
-          <div className="w-[240px] h-[240px] rounded-full overflow-hidden">
+          <div className="w-[180px] md:w-[240px] h-[180px] md:h-[240px] rounded-full overflow-hidden order-1 md:order-2">
             {/* <img
               src={MyFoto}
               alt=""
