@@ -1,0 +1,14 @@
+[
+    {
+        "period": "August - December 2024",
+        "title": "Web Developer Intern",
+        "company": "PT. Makerindo Prima Solusi",
+        "description": "I'm directly involved in the full development cycle of internal applications, from discussing requirements with clients and designing APIs using Laravel to assisting with the development of admin interfaces using React. I'm also responsible for deploying applications to the development environment."
+    },
+    {
+        "period": "2025 - Present",
+        "title": "Junior Backend Developer",
+        "company": "PT. LinkBee Education & Solution",
+        "description": "Contribute to the development and maintenance of backend applications using Go and Laravel. Involved in API design, database optimization, and third-party service integration to ensure optimal application performance."
+    }
+]

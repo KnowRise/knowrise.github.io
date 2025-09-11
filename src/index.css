@@ -1,0 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-libertinus-keyboard: "Libertinus Keyboard", sans-serif;
+  --font-source-serif-4: "Source Serif 4", serif;
+  --font-montserrat: "Montserrat", sans-serif;
+}
