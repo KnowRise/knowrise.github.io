@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/admin/layout,_N_T_/admin/blog/layout,_N_T_/admin/blog/editor/layout,_N_T_/admin/blog/editor/page,_N_T_/admin/blog/editor"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/admin/blog/editor/__PAGE__",
+    "/admin/blog/editor",
+    "/admin/blog",
+    "/admin",
+    "/_index",
+    "/_head"
+  ]
+}
