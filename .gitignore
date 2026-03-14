@@ -14,7 +14,7 @@ dist-ssr
 .next
 
 .env
-./admin_documentation.md
+admin_documentation.md
 
 # Editor directories and files
 .vscode/*
