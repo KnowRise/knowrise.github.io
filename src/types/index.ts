@@ -5,6 +5,7 @@ export interface WorkExperience {
   period: string;
   title: string;
   company: string;
+  company_url: string | null;
   description: string;
   sort_order: number;
   created_at: string;
@@ -15,6 +16,7 @@ export interface Education {
   period: string;
   title: string;
   institution: string;
+  institution_url: string | null;
   description: string;
   sort_order: number;
   created_at: string;
@@ -31,10 +33,17 @@ export interface Project {
   created_at: string;
 }
 
-export interface Skill {
+export interface SkillCategory {
   id: string;
   name: string;
-  category: string;
+  sort_order: number;
+}
+
+export interface Skill {
+  id: string;
+  category_id: string;
+  name: string;
+  url: string | null;
   sort_order: number;
 }
 
@@ -56,8 +65,7 @@ export interface Profile {
   id: string;
   full_name: string;
   tagline: string;
-  bio_paragraph_1: string;
-  bio_paragraph_2: string;
+  bio: string;
   photo_url: string | null;
   cv_url: string | null;
   instagram_url: string | null;
@@ -70,6 +78,7 @@ export interface TimelineItemProps {
   title: string;
   period: string;
   company: string;
+  url?: string | null;
   description: string;
   direction: 'left' | 'right';
 }

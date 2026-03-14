@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInstagram, faGithub } from '@fortawesome/free-brands-svg-icons';
+import { marked } from 'marked';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../types';
 
@@ -9,10 +10,8 @@ const STATIC_PROFILE: Profile = {
   id: 'static',
   full_name: 'Muhammad Rifaa Siraajuddin Sugandi',
   tagline: 'Backend Developer',
-  bio_paragraph_1:
-    'A 2025 graduate from SMKN 2 Sukabumi with a specialization in Software Engineering. As a Junior Backend Developer at a local startup, I\'m actively involved in building and maintaining efficient and reliable backend systems. While working, I am also advancing my knowledge by pursuing an Informatics degree at BSI University, which allows me to blend practical industry experience with strong theoretical foundations.',
-  bio_paragraph_2:
-    'I am a curious and persistent individual who is genuinely passionate about problem-solving. I believe that the best solutions come from a deep understanding of the core issue, and I enjoy the process of breaking down complex challenges into manageable parts. This methodical approach drives my work and my commitment to continuous learning.',
+  bio:
+    'A 2025 graduate from SMKN 2 Sukabumi with a specialization in Software Engineering. As a Junior Backend Developer at a local startup, I\'m actively involved in building and maintaining efficient and reliable backend systems.\n\nI am a curious and persistent individual who is genuinely passionate about problem-solving. I believe that the best solutions come from a deep understanding of the core issue, and I enjoy the process of breaking down complex challenges into manageable parts. This methodical approach drives my work and my commitment to continuous learning.',
   photo_url: '/img/MyFoto.png',
   cv_url: '/cv.pdf',
   instagram_url: 'https://www.instagram.com/rifaa_srjdn/',
@@ -45,12 +44,11 @@ export default function Home() {
               {profile.tagline}
             </h2>
           </div>
-          <p className="text-sm md:text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            {profile.bio_paragraph_1}
-          </p>
-          <p className="text-sm md:text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            {profile.bio_paragraph_2}
-          </p>
+          
+          <div 
+            className="prose prose-sm md:prose-base max-w-none text-[var(--text-secondary)] prose-a:text-[var(--green)] prose-a:font-bold hover:prose-a:underline"
+            dangerouslySetInnerHTML={{ __html: marked.parse(profile.bio, { async: false }) as string }}
+          />
 
           {/* Social + CV */}
           <div className="flex flex-wrap gap-3 items-center mt-2">

@@ -30,12 +30,12 @@ export default function Experience() {
         // Fallback: transform static JSON to match interface
         setWorkExperiences(workJson.map((w, i) => ({
           id: String(i), period: w.period, title: w.title,
-          company: w.company, description: w.description,
+          company: w.company, company_url: null, description: w.description,
           sort_order: i, created_at: '',
         })));
         setEducationHistory(eduJson.map((e, i) => ({
           id: String(i), period: e.period, title: e.title,
-          institution: e.company, description: e.description,
+          institution: e.company, institution_url: null, description: e.description,
           sort_order: i, created_at: '',
         })));
       }
@@ -97,6 +97,7 @@ export default function Experience() {
                 period={exp.period}
                 title={exp.title}
                 company={exp.company}
+                url={exp.company_url}
                 description={exp.description}
                 direction={index % 2 === 0 ? 'right' : 'left'}
               />
@@ -110,6 +111,7 @@ export default function Experience() {
                 period={edu.period}
                 title={edu.title}
                 company={edu.institution}
+                url={edu.institution_url}
                 description={edu.description}
                 direction={index % 2 === 0 ? 'right' : 'left'}
               />

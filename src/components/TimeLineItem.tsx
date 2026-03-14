@@ -1,6 +1,6 @@
 import type { TimelineItemProps } from '../types';
 
-export default function TimelineItem({ title, period, company, description, direction }: TimelineItemProps) {
+export default function TimelineItem({ title, period, company, url, description, direction }: TimelineItemProps) {
   const isRight = direction === 'right';
 
   return (
@@ -26,7 +26,13 @@ export default function TimelineItem({ title, period, company, description, dire
       >
         <p className="text-sm font-semibold" style={{ color: 'var(--green)' }}>{period}</p>
         <h3 className="text-lg font-bold mt-1" style={{ color: 'var(--text-primary)' }}>{title}</h3>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{company}</p>
+        {url ? (
+          <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold hover:underline transition-all" style={{ color: 'var(--text-muted)' }}>
+            {company} ↗
+          </a>
+        ) : (
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{company}</p>
+        )}
         <p className="text-sm mt-3 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{description}</p>
       </div>
     </div>

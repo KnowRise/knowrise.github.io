@@ -34,8 +34,7 @@ export default function ProfileAdmin() {
       .update({
         full_name: profile.full_name,
         tagline: profile.tagline,
-        bio_paragraph_1: profile.bio_paragraph_1,
-        bio_paragraph_2: profile.bio_paragraph_2,
+        bio: profile.bio,
         photo_url: profile.photo_url,
         cv_url: profile.cv_url,
         instagram_url: profile.instagram_url,
@@ -180,23 +179,18 @@ export default function ProfileAdmin() {
 
                   <div className="space-y-4">
                     <div>
-                      <InputLabel>Biography Paragraph 1</InputLabel>
+                      <InputLabel>Markdown Biography</InputLabel>
+                      <p className="text-[10px] mb-2" style={{ color: 'var(--text-muted)' }}>
+                         Supports Markdown. You can create multiple paragraphs by leaving blank lines in between.
+                         Links syntax: <code>[Clickable Text](https://url.com)</code>
+                      </p>
                       <textarea 
-                        required rows={5}
-                        value={profile.bio_paragraph_1}
-                        onChange={e => setProfile({...profile, bio_paragraph_1: e.target.value})}
-                        className="w-full px-4 py-3 rounded-lg border bg-transparent outline-none focus:border-[var(--green)] resize-none"
+                        required rows={10}
+                        value={profile.bio || ''}
+                        onChange={e => setProfile({...profile, bio: e.target.value})}
+                        className="w-full px-4 py-3 rounded-lg border bg-transparent font-mono text-sm outline-none focus:border-[var(--green)] resize-y"
                         style={{ borderColor: 'var(--input-border)', color: 'var(--text-primary)' }}
-                      />
-                    </div>
-                    <div>
-                      <InputLabel>Biography Paragraph 2</InputLabel>
-                      <textarea 
-                        required rows={4}
-                        value={profile.bio_paragraph_2}
-                        onChange={e => setProfile({...profile, bio_paragraph_2: e.target.value})}
-                        className="w-full px-4 py-3 rounded-lg border bg-transparent outline-none focus:border-[var(--green)] resize-none"
-                        style={{ borderColor: 'var(--input-border)', color: 'var(--text-primary)' }}
+                        placeholder="Write your biography here..."
                       />
                     </div>
                   </div>

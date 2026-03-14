@@ -19,8 +19,7 @@ CREATE TABLE profile (
   id TEXT PRIMARY KEY DEFAULT 'primary',
   full_name TEXT NOT NULL,
   tagline TEXT NOT NULL,
-  bio_paragraph_1 TEXT NOT NULL,
-  bio_paragraph_2 TEXT NOT NULL,
+  bio TEXT NOT NULL,
   photo_url TEXT,
   cv_url TEXT,
   instagram_url TEXT,
@@ -33,6 +32,7 @@ CREATE TABLE work_experiences (
   period TEXT NOT NULL,
   title TEXT NOT NULL,
   company TEXT NOT NULL,
+  company_url TEXT,
   description TEXT NOT NULL,
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -44,6 +44,7 @@ CREATE TABLE education_history (
   period TEXT NOT NULL,
   title TEXT NOT NULL,
   institution TEXT NOT NULL,
+  institution_url TEXT,
   description TEXT NOT NULL,
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -61,11 +62,19 @@ CREATE TABLE projects (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 6. Create Skills Table
-CREATE TABLE skills (
+-- 6. Create Skill Categories
+CREATE TABLE skill_categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
-  category TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0
+);
+
+-- 6.1 Create Skills Table (Child of Category)
+CREATE TABLE skills (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  category_id UUID NOT NULL REFERENCES skill_categories(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  url TEXT,
   sort_order INTEGER NOT NULL DEFAULT 0
 );
 
@@ -105,6 +114,7 @@ ALTER TABLE profile ENABLE ROW LEVEL SECURITY;
 ALTER TABLE work_experiences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE education_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE skill_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blogs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
@@ -118,6 +128,8 @@ CREATE POLICY "Public education history is viewable by everyone."
   ON education_history FOR SELECT USING (true);
 CREATE POLICY "Public projects are viewable by everyone." 
   ON projects FOR SELECT USING (true);
+CREATE POLICY "Public skill categories are viewable by everyone." 
+  ON skill_categories FOR SELECT USING (true);
 CREATE POLICY "Public skills are viewable by everyone." 
   ON skills FOR SELECT USING (true);
 CREATE POLICY "Public blogs are viewable by everyone if published." 
@@ -138,6 +150,8 @@ CREATE POLICY "Admins can manage education_history."
   ON education_history FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Admins can manage projects." 
   ON projects FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Admins can manage skill_categories." 
+  ON skill_categories FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Admins can manage skills." 
   ON skills FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Admins can manage blogs." 
@@ -148,13 +162,14 @@ CREATE POLICY "Admins can manage contact_messages."
 -- ==========================================
 -- INSERT DEFAULT PROFILE
 -- ==========================================
-INSERT INTO profile (id, full_name, tagline, bio_paragraph_1, bio_paragraph_2, photo_url, cv_url, instagram_url, github_url)
+INSERT INTO profile (id, full_name, tagline, bio, photo_url, cv_url, instagram_url, github_url)
 VALUES (
   'primary',
   'Muhammad Rifaa Siraajuddin Sugandi',
   'Backend Developer',
-  'A 2025 graduate from SMKN 2 Sukabumi with a specialization in Software Engineering. As a Junior Backend Developer at a local startup, I''m actively involved in building and maintaining efficient and reliable backend systems.',
-  'I am a curious and persistent individual who is genuinely passionate about problem-solving...',
+  'A 2025 graduate from SMKN 2 Sukabumi with a specialization in Software Engineering. As a Junior Backend Developer at a local startup, I''m actively involved in building and maintaining efficient and reliable backend systems.
+
+I am a curious and persistent individual who is genuinely passionate about problem-solving...',
   '/img/MyFoto.png',
   '/cv.pdf',
   'https://www.instagram.com/rifaa_srjdn/',
