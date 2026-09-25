@@ -12,6 +12,10 @@ import {
   FolderGit2, 
   BookOpen, 
   MessageSquare,
+  FileText,
+  Award,
+  BadgeCheck,
+  Settings,
   LogOut,
   Menu,
   X
@@ -50,20 +54,24 @@ export default function AdminSidebar({ children }: { children: React.ReactNode }
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/profile', label: 'Profile', icon: UserCircle },
     { href: '/admin/experience', label: 'Experience', icon: Briefcase },
-    { href: '/admin/work', label: 'Projects', icon: FolderGit2 },
+    { href: '/admin/projects', label: 'Projects', icon: FolderGit2 },
     { href: '/admin/skills', label: 'Skills', icon: GraduationCap },
+    { href: '/admin/publikasi', label: 'Publikasi', icon: FileText },
+    { href: '/admin/hki', label: 'HKI', icon: Award },
+    { href: '/admin/sertifikasi', label: 'Sertifikasi', icon: BadgeCheck },
     { href: '/admin/blog', label: 'Blogs', icon: BookOpen },
     { href: '/admin/contact', label: 'Messages', icon: MessageSquare },
+    { href: '/admin/settings', label: 'Settings', icon: Settings },
   ];
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-base)] text-[var(--text-primary)]">
+    <div className="min-h-screen flex items-center justify-center bg-(--bg-base) text-(--text-primary)">
       Loading Admin...
     </div>
   );
 
   return (
-    <div className="flex w-full h-screen overflow-hidden text-[var(--text-primary)] font-montserrat bg-transparent">
+    <div className="flex w-full h-screen overflow-hidden text-(--text-primary) font-montserrat bg-transparent">
       
       {/* Mobile Sidebar Overlay */}
       {isOpen && (
@@ -101,10 +109,10 @@ export default function AdminSidebar({ children }: { children: React.ReactNode }
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
-                  isActive ? 'bg-[var(--green-dim)] text-[var(--green)]' : 'hover:bg-[var(--btn-inactive)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  isActive ? 'bg-(--green-dim) text-(--green)' : 'hover:bg-(--btn-inactive) text-(--text-secondary) hover:text-(--text-primary)'
                 }`}
               >
-                <Icon className={`w-5 h-5 ${isActive ? 'text-[var(--green)]' : ''}`} />
+                <Icon className={`w-5 h-5 ${isActive ? 'text-(--green)' : ''}`} />
                 {item.label}
               </Link>
             )

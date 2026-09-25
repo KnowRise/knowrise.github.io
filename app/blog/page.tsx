@@ -1,3 +1,7 @@
-'use client';
 import Blog from '../../src/views/Blog';
-export default function Page() { return <Blog />; }
+import { guardMenu } from '../../src/lib/menu-guard';
+
+export default async function Page() {
+  await guardMenu('blog');
+  return <Blog />;
+}

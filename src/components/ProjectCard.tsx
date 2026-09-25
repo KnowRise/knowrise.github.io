@@ -1,6 +1,7 @@
-import type { WorkCardProps } from '../types';
+import Image from 'next/image';
+import type { ProjectCardProps } from '../types';
 
-export default function WorkCard({ work, direction }: WorkCardProps) {
+export default function ProjectCard({ project, direction }: ProjectCardProps) {
   const isRightImage = direction === 'right';
 
   return (
@@ -10,30 +11,32 @@ export default function WorkCard({ work, direction }: WorkCardProps) {
     >
       {/* Image */}
       <div
-        className={`w-full md:w-1/2 rounded-xl overflow-hidden border shadow-lg ${
+        className={`relative aspect-video w-full md:w-1/2 rounded-xl overflow-hidden border shadow-lg ${
           isRightImage ? 'md:order-2' : 'md:order-1'
         }`}
         style={{ borderColor: 'var(--card-border)' }}
       >
-        <img
-          src={work.image_url}
-          alt={`Cover for ${work.title}`}
-          className="w-full object-cover"
+        <Image
+          src={project.image_url}
+          alt={`Cover for ${project.title}`}
+          fill
+          sizes="(min-width: 768px) 50vw, 100vw"
+          className="object-cover"
         />
       </div>
 
       {/* Text */}
       <div className={`w-full md:w-1/2 ${isRightImage ? 'md:order-1' : 'md:order-2'}`}>
         <h3 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-          {work.title}
+          {project.title}
         </h3>
         <p className="mb-4 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-          {work.description}
+          {project.description}
         </p>
 
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mb-4">
-          {work.tags.map((tag) => (
+          {project.tags.map((tag) => (
             <span
               key={tag}
               className="text-xs font-semibold px-3 py-1 rounded-full"
@@ -45,7 +48,7 @@ export default function WorkCard({ work, direction }: WorkCardProps) {
         </div>
 
         <a
-          href={work.project_url}
+          href={project.project_url}
           target="_blank"
           rel="noopener noreferrer"
           className="font-semibold transition-opacity hover:opacity-75"

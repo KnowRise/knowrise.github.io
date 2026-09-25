@@ -3,6 +3,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AdminSidebar from '../../../../src/components/AdminSidebar';
 import AdminToast from '../../../../src/components/AdminToast';
+import FileUploader from '../../../../src/components/FileUploader';
 import { supabase } from '../../../../src/lib/supabase';
 import type { BlogPost } from '../../../../src/types';
 import { Save, Loader2, ArrowLeft, Image as ImageIcon, FileText, Tag } from 'lucide-react';
@@ -81,7 +82,7 @@ function BlogEditorContent() {
   };
 
   if (loading) return (
-    <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-[var(--green)]" /></div>
+    <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-(--green)" /></div>
   );
 
   return (
@@ -103,14 +104,14 @@ function BlogEditorContent() {
                  type="checkbox" 
                  checked={post.is_published} 
                  onChange={e => setPost({...post, is_published: e.target.checked})}
-                 className="w-4 h-4 rounded border-gray-300 text-[var(--green)] focus:ring-[var(--green)]"
+                 className="w-4 h-4 rounded border-gray-300 text-(--green) focus:ring-(--green)"
               />
               Publish immediately?
             </label>
             <button 
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm bg-[var(--btn-active)] text-[var(--btn-active-text)] hover:opacity-90 font-bold transition-opacity disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm bg-(--btn-active) text-(--btn-active-text) hover:opacity-90 font-bold transition-opacity disabled:opacity-50"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save Post
@@ -156,7 +157,7 @@ function BlogEditorContent() {
                    value={post.slug}
                    onChange={e => setPost({...post, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')})}
                    placeholder="leave-blank-to-auto-generate"
-                   className="w-full px-3 py-2 rounded-lg border bg-transparent text-sm outline-none focus:border-[var(--green)]"
+                   className="w-full px-3 py-2 rounded-lg border bg-transparent text-sm outline-none focus:border-(--green)"
                    style={{ borderColor: 'var(--input-border)' }}
                  />
                </div>
@@ -168,7 +169,7 @@ function BlogEditorContent() {
                    value={post.excerpt || ''}
                    onChange={e => setPost({...post, excerpt: e.target.value})}
                    placeholder="Brief summary for cards..."
-                   className="w-full px-3 py-2 rounded-lg border bg-transparent text-sm outline-none focus:border-[var(--green)] resize-none"
+                   className="w-full px-3 py-2 rounded-lg border bg-transparent text-sm outline-none focus:border-(--green) resize-none"
                    style={{ borderColor: 'var(--input-border)' }}
                  />
                </div>
@@ -180,7 +181,7 @@ function BlogEditorContent() {
                    value={(post.tags || []).join(', ')}
                    onChange={e => setPost({...post, tags: e.target.value.split(',').map(t=>t.trim())})}
                    placeholder="Nextjs, React, Supabase..."
-                   className="w-full px-3 py-2 rounded-lg border bg-transparent text-sm outline-none focus:border-[var(--green)]"
+                   className="w-full px-3 py-2 rounded-lg border bg-transparent text-sm outline-none focus:border-(--green)"
                    style={{ borderColor: 'var(--input-border)' }}
                  />
                </div>
@@ -189,18 +190,20 @@ function BlogEditorContent() {
             <div className="p-5 rounded-2xl border space-y-5" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
                <h3 className="font-bold flex items-center gap-2 text-sm uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}><ImageIcon className="w-4 h-4" /> Cover Image</h3>
                
-               {post.cover_url && (
-                  <div className="w-full h-32 rounded-lg overflow-hidden border" style={{ borderColor: 'var(--card-border)' }}>
-                     <img src={post.cover_url} alt="Cover Preview" className="w-full h-full object-cover" />
-                  </div>
-               )}
+               <FileUploader
+                 folder="blogs"
+                 compact
+                 value={post.cover_url || ''}
+                 onChange={url => setPost({ ...post, cover_url: url })}
+                 label="Unggah cover (gambar dikompres otomatis)"
+               />
 
                <input 
                  type="text" 
                  value={post.cover_url || ''}
                  onChange={e => setPost({...post, cover_url: e.target.value})}
-                 placeholder="https://image-url.com/img.png"
-                 className="w-full px-3 py-2 rounded-lg border bg-transparent text-sm outline-none focus:border-[var(--green)]"
+                 placeholder="atau tempel URL cover di sini..."
+                 className="w-full px-3 py-2 rounded-lg border bg-transparent text-sm outline-none focus:border-(--green)"
                  style={{ borderColor: 'var(--input-border)' }}
                />
                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Paste an absolute image URL to be used as the blog cover.</p>

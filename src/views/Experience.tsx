@@ -1,6 +1,11 @@
+'use client';
 import { useEffect, useState } from 'react';
 import TimelineItem from '../components/TimeLineItem';
 import LoadingSkeleton from '../components/LoadingSkeleton';
+import PaginationControls from '../components/PaginationControls';
+import SearchInput from '../components/SearchInput';
+import { usePagination } from '../hooks/usePagination';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { supabase } from '../lib/supabase';
 import type { WorkExperience, Education } from '../types';
 
@@ -15,19 +20,37 @@ export default function Experience() {
   const [workExperiences, setWorkExperiences] = useState<WorkExperience[]>([]);
   const [educationHistory, setEducationHistory] = useState<Education[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const workPg = usePagination(6);
+  const eduPg = usePagination(6);
+  const debounced = useDebouncedValue(search, 350);
+
+  useEffect(() => {
+    const p = activeTab === 'work' ? workPg : eduPg;
+    if (p.page !== 1) p.resetPage();
+  }, [debounced, activeTab]);
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       if (supabase) {
-        const [{ data: workData }, { data: eduData }] = await Promise.all([
-          supabase.from('work_experiences').select('*').order('sort_order'),
-          supabase.from('education_history').select('*').order('sort_order'),
+        let wq: any = supabase.from('work_experiences').select('*', { count: 'exact' });
+        let eq: any = supabase.from('education_history').select('*', { count: 'exact' });
+        const term = debounced.trim();
+        if (term) {
+          const esc = term.replace(/[%_]/g, (m) => '\\' + m);
+          wq = wq.or(`title.ilike.%${esc}%,company.ilike.%${esc}%`);
+          eq = eq.or(`title.ilike.%${esc}%,institution.ilike.%${esc}%`);
+        }
+        const [{ data: workData, count: wCount }, { data: eduData, count: eCount }] = await Promise.all([
+          wq.order('sort_order', { ascending: true }).range(workPg.from, workPg.to),
+          eq.order('sort_order', { ascending: true }).range(eduPg.from, eduPg.to),
         ]);
-        if (workData) setWorkExperiences(workData as WorkExperience[]);
-        if (eduData) setEducationHistory(eduData as Education[]);
+        setWorkExperiences((workData || []) as WorkExperience[]);
+        setEducationHistory((eduData || []) as Education[]);
+        if (wCount !== null) workPg.setTotal(wCount);
+        if (eCount !== null) eduPg.setTotal(eCount);
       } else {
-        // Fallback: transform static JSON to match interface
         setWorkExperiences(workJson.map((w, i) => ({
           id: String(i), period: w.period, title: w.title,
           company: w.company, company_url: null, description: w.description,
@@ -38,18 +61,25 @@ export default function Experience() {
           institution: e.company, institution_url: null, description: e.description,
           sort_order: i, created_at: '',
         })));
+        workPg.setTotal(workJson.length);
+        eduPg.setTotal(eduJson.length);
       }
       setLoading(false);
     }
     fetchData();
-  }, []);
+  }, [workPg.page, eduPg.page, debounced]);
 
   const tabClass = (tab: Tab) =>
     `py-2 px-6 rounded-lg text-sm font-semibold font-montserrat border transition-all ${
       activeTab === tab
         ? 'border-transparent'
-        : 'border-transparent hover:border-[var(--green)]'
+        : 'border-transparent hover:border-(--green)'
     }`;
+
+  const isWork = activeTab === 'work';
+  const pageItems = isWork ? workExperiences : educationHistory;
+  const total = isWork ? workPg.total : eduPg.total;
+  const pageProps = isWork ? workPg : eduPg;
 
   return (
     <div className="w-full mx-auto py-14 page-in">
@@ -57,9 +87,9 @@ export default function Experience() {
         My Journey
       </h1>
 
-      <div className="flex justify-center gap-3 mb-12">
+      <div className="flex justify-center gap-3 mb-8">
         <button
-          onClick={() => setActiveTab('work')}
+          onClick={() => { setActiveTab('work'); workPg.setPage(1); }}
           className={tabClass('work')}
           style={{
             background: activeTab === 'work' ? 'var(--btn-active)' : 'var(--btn-inactive)',
@@ -69,7 +99,7 @@ export default function Experience() {
           Work Experience
         </button>
         <button
-          onClick={() => setActiveTab('education')}
+          onClick={() => { setActiveTab('education'); eduPg.setPage(1); }}
           className={tabClass('education')}
           style={{
             background: activeTab === 'education' ? 'var(--btn-active)' : 'var(--btn-inactive)',
@@ -80,39 +110,45 @@ export default function Experience() {
         </button>
       </div>
 
+      {!loading && (
+        <div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder={isWork ? 'Cari posisi/company...' : 'Cari gelar/institusi...'}
+            className="max-w-md mx-auto"
+          />
+        </div>
+      )}
+
+      {!loading && pageItems.length > 0 && (
+        <div className="mb-6">
+          <PaginationControls page={pageProps.page} pageSize={pageProps.pageSize} total={total} onChange={pageProps.setPage} />
+        </div>
+      )}
+
       <div className="relative">
         {/* Continuous solid line */}
-        <div 
-          className="absolute top-0 bottom-0 left-5 md:left-1/2 w-px -translate-x-1/2 z-0" 
-          style={{ background: 'var(--timeline-line)' }} 
+        <div
+          className="absolute top-0 bottom-0 left-5 md:left-1/2 w-px -translate-x-1/2 z-0"
+          style={{ background: 'var(--timeline-line)' }}
         />
-        
         {loading ? (
           <LoadingSkeleton type="list" count={2} />
-        ) : activeTab === 'work' ? (
+        ) : pageItems.length === 0 ? (
+          <p className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
+            {search.trim() ? `Tidak ada hasil untuk "${search}".` : 'Belum ada data untuk ditampilkan.'}
+          </p>
+        ) : (
           <div>
-            {workExperiences.map((exp, index) => (
+            {pageItems.map((exp, index) => (
               <TimelineItem
                 key={exp.id}
                 period={exp.period}
                 title={exp.title}
-                company={exp.company}
-                url={exp.company_url}
+                company={isWork ? (exp as WorkExperience).company : (exp as Education).institution}
+                url={isWork ? (exp as WorkExperience).company_url : (exp as Education).institution_url}
                 description={exp.description}
-                direction={index % 2 === 0 ? 'right' : 'left'}
-              />
-            ))}
-          </div>
-        ) : (
-          <div>
-            {educationHistory.map((edu, index) => (
-              <TimelineItem
-                key={edu.id}
-                period={edu.period}
-                title={edu.title}
-                company={edu.institution}
-                url={edu.institution_url}
-                description={edu.description}
                 direction={index % 2 === 0 ? 'right' : 'left'}
               />
             ))}

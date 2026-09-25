@@ -1,3 +1,7 @@
-'use client';
 import Skills from '../../src/views/Skills';
-export default function Page() { return <Skills />; }
+import { guardMenu } from '../../src/lib/menu-guard';
+
+export default async function Page() {
+  await guardMenu('skills');
+  return <Skills />;
+}

@@ -24,7 +24,7 @@ export default function SkillCategory({ category, skills }: SkillCategoryProps) 
               href={skill.url || undefined}
               target={skill.url ? "_blank" : undefined}
               rel={skill.url ? "noopener noreferrer" : undefined}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colors duration-200 ${skill.url ? 'hover:border-[var(--green)] hover:text-[var(--green)]' : 'hover:border-[var(--green)]'}`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colors duration-200 ${skill.url ? 'hover:border-(--green) hover:text-(--green)' : 'hover:border-(--green)'}`}
               style={{
                 background: 'var(--tag-bg)',
                 borderColor: 'var(--card-border)',
@@ -32,7 +32,7 @@ export default function SkillCategory({ category, skills }: SkillCategoryProps) 
               }}
             >
               <span
-                className="w-2 h-2 rounded-full flex-shrink-0"
+                className="w-2 h-2 rounded-full shrink-0"
                 style={{ background: isLearning ? '#f59e0b' : 'var(--green)' }}
               />
               {skill.name}

@@ -18,6 +18,7 @@
     "@tailwindcss/postcss": "^4.2.1",
     "@types/marked": "^5.0.2",
     "aos": "^2.3.4",
+    "browser-image-compression": "^2.0.2",
     "lucide-react": "^0.577.0",
     "marked": "^17.0.4",
     "next": "^16.1.6",

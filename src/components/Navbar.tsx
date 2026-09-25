@@ -4,10 +4,14 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '../context/ThemeContext';
+import { useSettings } from '../hooks/useSettings';
+import { MENU_KEYS, isMenuVisible, menuLabel } from '../lib/settings';
+import type { MenuKey } from '../types';
 
 export default function Navbar() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
+  const settings = useSettings();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -25,14 +29,14 @@ export default function Navbar() {
     return null;
   }
 
-  const links = [
-    { to: '/', label: 'Home' },
-    { to: '/experience', label: 'Experience' },
-    { to: '/work', label: 'Work' },
-    { to: '/skills', label: 'Skills' },
-    { to: '/blog', label: 'Blog' },
-    { to: '/contact', label: 'Contact' },
-  ];
+  const visibleKeys: MenuKey[] = settings
+    ? MENU_KEYS.filter((key) => isMenuVisible(settings, key))
+    : MENU_KEYS;
+
+  const links = visibleKeys.map((key) => ({
+    to: key === 'home' ? '/' : `/${key}`,
+    label: menuLabel(key),
+  }));
 
   const isActive = (path: string) =>
     path === '/' ? pathname === '/' : pathname?.startsWith(path);
@@ -40,7 +44,7 @@ export default function Navbar() {
   return (
     <nav 
       className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-[var(--bg-base)] shadow-sm px-6 rounded-b-2xl' : 'bg-transparent px-0'
+        scrolled ? 'bg-(--bg-base) shadow-sm px-6 rounded-b-2xl' : 'bg-transparent px-0'
       }`}
     >
       <div className={`flex justify-between items-center transition-all duration-300 ${scrolled ? 'py-3' : 'py-5'}`}>
@@ -62,9 +66,9 @@ export default function Navbar() {
               href={to}
               className={`text-sm pb-0.5 border-b-2 transition-colors duration-200 ${
                 isActive(to)
-                  ? 'font-bold border-[var(--green)]'
-                  : 'border-transparent hover:border-[var(--green)]'
-              }`}
+                  ? 'font-bold border-(--green)]'
+                 : 'border-transparent hover:border-(--green)]'
+             }`}
               style={{ color: isActive(to) ? 'var(--text-primary)' : 'var(--text-secondary)' }}
             >
               {label}

@@ -1,33 +1,62 @@
+'use client';
 import { useEffect, useState } from 'react';
 import BlogCard from '../components/BlogCard';
 import LoadingSkeleton from '../components/LoadingSkeleton';
+import PaginationControls from '../components/PaginationControls';
+import SearchInput from '../components/SearchInput';
+import { usePagination } from '../hooks/usePagination';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { supabase } from '../lib/supabase';
 import type { BlogPost } from '../types';
 
 export default function Blog() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState<string>('All');
+  const pg = usePagination(6);
+  const debounced = useDebouncedValue(search, 350);
 
   useEffect(() => {
-    async function fetchPosts() {
-      setLoading(true);
-      if (supabase) {
-        const { data } = await supabase
-          .from('blogs')
-          .select('*')
-          .eq('is_published', true)
-          .order('published_at', { ascending: false });
-        if (data) setPosts(data as BlogPost[]);
-      }
-      setLoading(false);
-    }
-    fetchPosts();
+    if (!supabase) return;
+    supabase
+      .from('blogs')
+      .select('tags')
+      .eq('is_published', true)
+      .then(({ data }) => {
+        const all = Array.from(new Set((data || []).flatMap((r) => (r as BlogPost).tags))).sort();
+        setTags(all);
+      });
   }, []);
 
-  // Collect unique tags
-  const allTags = ['All', ...Array.from(new Set(posts.flatMap(p => p.tags)))];
-  const filtered = activeTag === 'All' ? posts : posts.filter(p => p.tags.includes(activeTag));
+  useEffect(() => {
+    if (pg.page !== 1) pg.resetPage();
+  }, [debounced, activeTag]);
+
+  useEffect(() => { fetchPosts(); }, [pg.page, debounced, activeTag]);
+
+  async function fetchPosts() {
+    setLoading(true);
+    if (supabase) {
+      let query: any = supabase.from('blogs').select('*', { count: 'exact' }).eq('is_published', true);
+      if (activeTag !== 'All') query = query.contains('tags', [activeTag]);
+      const term = debounced.trim();
+      if (term) {
+        const esc = term.replace(/[%_]/g, (m) => '\\' + m);
+        query = query.or(`title.ilike.%${esc}%,excerpt.ilike.%${esc}%`);
+      }
+      const { data, count } = await query.order('published_at', { ascending: false }).range(pg.from, pg.to);
+      setPosts((data || []) as BlogPost[]);
+      if (count !== null) pg.setTotal(count);
+    } else {
+      setPosts([]);
+      pg.setTotal(0);
+    }
+    setLoading(false);
+  }
+
+  const allTags = ['All', ...tags];
 
   return (
     <div className="py-14 page-in">
@@ -40,11 +69,11 @@ export default function Blog() {
 
       {/* Tag filter */}
       {!loading && allTags.length > 1 && (
-        <div className="flex flex-wrap gap-2 justify-center mb-8">
+        <div className="flex flex-wrap gap-2 justify-center mb-6">
           {allTags.map(tag => (
             <button
               key={tag}
-              onClick={() => setActiveTag(tag)}
+              onClick={() => { setActiveTag(tag); pg.setPage(1); }}
               className="text-xs px-3 py-1.5 rounded-full border transition-all"
               style={{
                 background: activeTag === tag ? 'var(--btn-active)' : 'var(--btn-inactive)',
@@ -58,18 +87,27 @@ export default function Blog() {
         </div>
       )}
 
+      {!loading && (
+        <div className="mb-8">
+          <SearchInput value={search} onChange={setSearch} placeholder="Cari tulisan..." className="max-w-md mx-auto" />
+        </div>
+      )}
+
       {loading ? (
         <LoadingSkeleton type="list" count={3} />
-      ) : filtered.length === 0 ? (
+      ) : posts.length === 0 ? (
         <div className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
           <p className="text-4xl mb-4">✍️</p>
-          <p>Belum ada postingan untuk saat ini. Nantikan tulisan pertama!</p>
+          {search.trim() || activeTag !== 'All'
+            ? <p>Tidak ada hasil untuk pencarian ini.</p>
+            : <p>Belum ada postingan untuk saat ini. Nantikan tulisan pertama!</p>}
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
-          {filtered.map(post => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {posts.map(post => (
             <BlogCard key={post.id} post={post} />
           ))}
+          <PaginationControls page={pg.page} pageSize={pg.pageSize} total={pg.total} onChange={pg.setPage} />
         </div>
       )}
     </div>

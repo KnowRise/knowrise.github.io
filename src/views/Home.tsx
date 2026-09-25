@@ -1,4 +1,6 @@
+'use client';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInstagram, faGithub } from '@fortawesome/free-brands-svg-icons';
 import { marked } from 'marked';
@@ -46,7 +48,7 @@ export default function Home() {
           </div>
           
           <div 
-            className="prose prose-sm md:prose-base max-w-none text-[var(--text-secondary)] prose-a:text-[var(--green)] prose-a:font-bold hover:prose-a:underline"
+            className="prose prose-sm md:prose-base max-w-none text-(--text-secondary) prose-a:text-(--green) prose-a:font-bold hover:prose-a:underline"
             dangerouslySetInnerHTML={{ __html: marked.parse(profile.bio, { async: false }) as string }}
           />
 
@@ -57,7 +59,7 @@ export default function Home() {
                 href={profile.instagram_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-all hover:border-[var(--green)] hover:text-[var(--green)]"
+                className="flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-all hover:border-(--green) hover:text-(--green)"
                 style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--text-secondary)' }}
               >
                 <FontAwesomeIcon icon={faInstagram} />
@@ -69,7 +71,7 @@ export default function Home() {
                 href={profile.github_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-all hover:border-[var(--green)] hover:text-[var(--green)]"
+                className="flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-all hover:border-(--green) hover:text-(--green)"
                 style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--text-secondary)' }}
               >
                 <FontAwesomeIcon icon={faGithub} />
@@ -93,13 +95,15 @@ export default function Home() {
 
         {/* Photo */}
         <div
-          className="w-36 h-36 md:w-48 md:h-48 rounded-full overflow-hidden flex-shrink-0 border-2"
+          className="relative w-36 h-36 md:w-48 md:h-48 rounded-full overflow-hidden shrink-0 border-2"
           style={{ borderColor: 'var(--green)' }}
         >
-          <img
+          <Image
             src={profile.photo_url ?? '/img/MyFoto.png'}
             alt={profile.full_name}
-            className="w-full h-full object-cover object-top"
+            fill
+            sizes="(min-width: 768px) 192px, 144px"
+            className="object-cover object-top"
           />
         </div>
       </div>

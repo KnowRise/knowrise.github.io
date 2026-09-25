@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import AdminSidebar from '../../src/components/AdminSidebar';
 import { supabase } from '../../src/lib/supabase';
-import { FileText, MessageSquare, Briefcase, Hash } from 'lucide-react';
+import { FileText, MessageSquare, Briefcase, Hash, BookOpen, Award, BadgeCheck } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -10,22 +10,31 @@ export default function AdminDashboard() {
     messages: 0,
     work: 0,
     skills: 0,
+    publikasi: 0,
+    hki: 0,
+    sertifikasi: 0,
   });
 
   useEffect(() => {
     async function fetchStats() {
       if (!supabase) return;
-      
+
       const [
         { count: blogCount },
         { count: msgCount },
         { count: workCount },
         { count: skillCount },
+        { count: publikasiCount },
+        { count: hkiCount },
+        { count: sertifikasiCount },
       ] = await Promise.all([
         supabase.from('blogs').select('*', { count: 'exact', head: true }),
         supabase.from('contact_messages').select('*', { count: 'exact', head: true }),
         supabase.from('work_experiences').select('*', { count: 'exact', head: true }),
         supabase.from('skills').select('*', { count: 'exact', head: true }),
+        supabase.from('publications').select('*', { count: 'exact', head: true }),
+        supabase.from('hki').select('*', { count: 'exact', head: true }),
+        supabase.from('certifications').select('*', { count: 'exact', head: true }),
       ]);
 
       setStats({
@@ -33,6 +42,9 @@ export default function AdminDashboard() {
         messages: msgCount || 0,
         work: workCount || 0,
         skills: skillCount || 0,
+        publikasi: publikasiCount || 0,
+        hki: hkiCount || 0,
+        sertifikasi: sertifikasiCount || 0,
       });
     }
 
@@ -59,11 +71,14 @@ export default function AdminDashboard() {
           <p style={{ color: 'var(--text-secondary)' }}>Welcome to your portfolio CMS. Manage your content from the sidebar.</p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Total Blogs" value={stats.blogs} icon={FileText} color="74, 222, 128" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <StatCard title="Total Blogs" value={stats.blogs} icon={BookOpen} color="74, 222, 128" />
           <StatCard title="Inbox Messages" value={stats.messages} icon={MessageSquare} color="59, 130, 246" />
           <StatCard title="Work Experiences" value={stats.work} icon={Briefcase} color="168, 85, 247" />
           <StatCard title="Listed Skills" value={stats.skills} icon={Hash} color="234, 179, 8" />
+          <StatCard title="Publikasi" value={stats.publikasi} icon={FileText} color="34, 197, 94" />
+          <StatCard title="HKI" value={stats.hki} icon={Award} color="239, 68, 68" />
+          <StatCard title="Sertifikasi" value={stats.sertifikasi} icon={BadgeCheck} color="14, 165, 233" />
         </div>
       </div>
     </AdminSidebar>

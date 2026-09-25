@@ -66,14 +66,14 @@ function AdminLoginForm() {
 
   if (checkingSession) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-base)] text-[var(--text-primary)]">
-         <Loader2 className="w-8 h-8 animate-spin text-[var(--green)]" />
+      <div className="min-h-screen flex items-center justify-center bg-(--bg-base) text-(--text-primary)">
+         <Loader2 className="w-8 h-8 animate-spin text-(--green)" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 text-[var(--text-primary)] font-montserrat relative page-in w-full">
+    <div className="min-h-screen flex items-center justify-center p-4 text-(--text-primary) font-montserrat relative page-in w-full">
       <div 
         className="w-full max-w-md p-8 rounded-2xl border backdrop-blur-md relative z-10 shadow-xl"
         style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
@@ -96,7 +96,7 @@ function AdminLoginForm() {
 
         {error && (
           <div className="flex items-center gap-2 p-3 rounded-lg mb-6 text-sm border font-semibold" style={{ background: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.2)', color: '#ef4444' }}>
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <p>{error}</p>
           </div>
         )}
@@ -110,7 +110,7 @@ function AdminLoginForm() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border outline-none focus:border-[var(--green)] transition-all bg-transparent"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border outline-none focus:border-(--green) transition-all bg-transparent"
                 style={{ borderColor: 'var(--input-border)', color: 'var(--text-primary)' }}
                 placeholder="admin@knowrise.com"
                 required
@@ -126,7 +126,7 @@ function AdminLoginForm() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border outline-none focus:border-[var(--green)] transition-all bg-transparent"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border outline-none focus:border-(--green) transition-all bg-transparent"
                 style={{ borderColor: 'var(--input-border)', color: 'var(--text-primary)' }}
                 placeholder="••••••••"
                 required
@@ -150,7 +150,7 @@ function AdminLoginForm() {
 
 export default function AdminLogin() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[var(--bg-base)] text-[var(--text-primary)]"><Loader2 className="w-8 h-8 animate-spin text-[var(--green)]" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-(--bg-base) text-(--text-primary)"><Loader2 className="w-8 h-8 animate-spin text-(--green)" /></div>}>
       <AdminLoginForm />
     </Suspense>
   );

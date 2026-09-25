@@ -4,7 +4,13 @@ import AdminSidebar from '../../../src/components/AdminSidebar';
 import AdminToast from '../../../src/components/AdminToast';
 import { supabase } from '../../../src/lib/supabase';
 import type { Skill, SkillCategory } from '../../../src/types';
-import { Plus, Trash2, Loader2, Save, LayoutGrid, ArrowUpDown, ChevronDown, ChevronRight, Link as LinkIcon } from 'lucide-react';
+import { usePagination } from '../../../src/hooks/usePagination';
+import { useDebouncedValue } from '../../../src/hooks/useDebouncedValue';
+import { useResourceControls } from '../../../src/hooks/useResourceControls';
+import { bulkDeleteByIds } from '../../../src/lib/bulkDelete';
+import PaginationControls from '../../../src/components/PaginationControls';
+import AdminListToolbar from '../../../src/components/AdminListToolbar';
+import { Plus, Trash2, Loader2, LayoutGrid, ArrowUpDown, ChevronDown, ChevronRight, Link as LinkIcon } from 'lucide-react';
 
 export default function SkillsAdmin() {
   const [categories, setCategories] = useState<SkillCategory[]>([]);
@@ -12,18 +18,33 @@ export default function SkillsAdmin() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{msg: string, type: 'success'|'error'|'loading'|null}>({ msg: '', type: null });
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
+  const catPg = usePagination(12);
+  const catCtl = useResourceControls();
+  const catDir = catCtl.orderDir;
+  const catSearch = useDebouncedValue(catCtl.search, 350);
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => {
+    if (catPg.page !== 1) catPg.resetPage();
+  }, [catSearch, catDir]);
+
+  useEffect(() => { fetchAll(); }, [catPg.page, catSearch, catDir]);
 
   async function fetchAll() {
     if (!supabase) return;
     setLoading(true);
+    let catQuery: any = supabase.from('skill_categories').select('*', { count: 'exact' });
+    const term = catSearch.trim();
+    if (term) {
+      const esc = term.replace(/[%_]/g, (m) => '\\' + m);
+      catQuery = catQuery.ilike('name', `%${esc}%`);
+    }
     const [catRes, skillRes] = await Promise.all([
-      supabase.from('skill_categories').select('*').order('sort_order', { ascending: true }),
+      catQuery.order('sort_order', { ascending: catDir === 'asc' }).range(catPg.from, catPg.to),
       supabase.from('skills').select('*').order('sort_order', { ascending: true })
     ]);
     setCategories(catRes.data || []);
     setSkills(skillRes.data || []);
+    if (catRes.count !== null) catPg.setTotal(catRes.count);
     setLoading(false);
   }
 
@@ -36,8 +57,9 @@ export default function SkillsAdmin() {
       sort_order: newOrder
     }]).select().single();
     if (!error && data) {
-      setCategories([...categories, data]);
       setExpandedCat(data.id);
+      if (catPg.page === 1) fetchAll();
+      else catPg.setPage(1);
     }
   };
 
@@ -56,9 +78,53 @@ export default function SkillsAdmin() {
     if (!supabase || !confirm('Delete category AND all its skills?')) return;
     const { error } = await supabase.from('skill_categories').delete().eq('id', id);
     if (!error) {
-      setCategories(categories.filter(c => c.id !== id));
-      setSkills(skills.filter(s => s.category_id !== id));
+      if (categories.length === 1 && catPg.page > 1) {
+        catPg.setPage(catPg.page - 1);
+      } else {
+        setCategories(categories.filter(c => c.id !== id));
+        setSkills(skills.filter(s => s.category_id !== id));
+        catPg.setTotal(Math.max(0, catPg.total - 1));
+      }
     }
+  };
+
+  const handleBulkDeleteCategories = async () => {
+    const ids = [...catCtl.selected];
+    if (!supabase || ids.length === 0) return;
+    if (!confirm(`Delete ${ids.length} category/ies AND all their skills?`)) return;
+    const { error } = await bulkDeleteByIds(supabase, 'skill_categories', ids);
+    if (!error) {
+      catCtl.clearSelection();
+      setCategories(categories.filter(c => !ids.includes(c.id)));
+      setSkills(skills.filter(s => !ids.includes(s.category_id)));
+      const remaining = Math.max(0, catPg.total - ids.length);
+      if (categories.length > 0 && categories.every(c => ids.includes(c.id)) && catPg.page > 1) {
+        catPg.setPage(catPg.page - 1);
+      } else {
+        catPg.setTotal(remaining);
+      }
+      setToast({ msg: `Deleted ${ids.length}`, type: 'success' });
+      setTimeout(() => setToast({ msg: '', type: null }), 2000);
+    } else {
+      setToast({ msg: 'Failed to delete', type: 'error' });
+      setTimeout(() => setToast({ msg: '', type: null }), 2000);
+    }
+  };
+
+  const handleSelectAllCategories = async () => {
+    if (!supabase || catPg.total === 0) return;
+    if (catCtl.selected.size >= catPg.total && catPg.total > 0) {
+      catCtl.clearSelection();
+      return;
+    }
+    let query: any = supabase.from('skill_categories').select('id');
+    const term = catSearch.trim();
+    if (term) {
+      const esc = term.replace(/[%_]/g, (m) => '\\' + m);
+      query = query.ilike('name', `%${esc}%`);
+    }
+    const { data } = await query;
+    if (data) catCtl.setSelectedIds((data as { id: string }[]).map((r) => r.id));
   };
 
   /* --- SKILL HANDLERS --- */
@@ -102,32 +168,57 @@ export default function SkillsAdmin() {
                <h1 className="text-2xl font-bold font-montserrat flex items-center gap-2"><LayoutGrid className="w-6 h-6 text-yellow-500" /> Skills Categories</h1>
                <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Organize your tools into distinct categories, then add linkable skills inside them.</p>
              </div>
-             <button onClick={handleAddCategory} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm bg-[var(--btn-active)] text-[var(--btn-active-text)] hover:opacity-90 font-bold transition-opacity">
+             <button onClick={handleAddCategory} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm bg-(--btn-active) text-(--btn-active-text) hover:opacity-90 font-bold transition-opacity">
                <Plus className="w-5 h-5" /> Add Category
              </button>
           </header>
 
           {loading ? (
-             <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-[var(--green)]" /></div>
+             <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-(--green)" /></div>
           ) : categories.length === 0 ? (
-             <div className="p-10 text-center border rounded-2xl" style={{ borderColor: 'var(--card-border)', color: 'var(--text-muted)' }}>No categories found. Start by adding one above.</div>
+             <div className="p-10 text-center border rounded-2xl" style={{ borderColor: 'var(--card-border)', color: 'var(--text-muted)' }}>
+               {catCtl.search.trim() ? `Tidak ada hasil untuk "${catCtl.search}".` : 'No categories found. Start by adding one above.'}
+             </div>
           ) : (
             <div className="space-y-4">
+              <AdminListToolbar
+                placeholder="Cari kategori..."
+                search={catCtl.search}
+                onSearch={catCtl.setSearch}
+                selectedCount={catCtl.selected.size}
+                onDeleteSelected={handleBulkDeleteCategories}
+                onSelectPage={() => catCtl.toggleMany(categories.map(c => c.id))}
+                onSelectAll={handleSelectAllCategories}
+                selectAllTotal={catPg.total}
+                onClearSelection={catCtl.clearSelection}
+              />
               {categories.map((cat) => {
                 const catSkills = skills.filter(s => s.category_id === cat.id).sort((a,b) => a.sort_order - b.sort_order);
                 const isExpanded = expandedCat === cat.id;
 
                 return (
-                  <div key={cat.id} className="border rounded-xl overflow-hidden shadow-sm" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
+                  <div key={cat.id} className="border rounded-xl overflow-hidden shadow-sm" style={{ background: 'var(--card-bg)', borderColor: catCtl.isSelected(cat.id) ? 'var(--green)' : 'var(--card-border)', boxShadow: catCtl.isSelected(cat.id) ? '0 0 0 1px var(--green)' : 'none' }}>
                     
                     {/* Category Header Row */}
-                    <div className="flex items-center gap-4 p-4 border-b" style={{ borderColor: 'var(--card-border)', background: 'var(--bg-base)' }}>
+                    <div className="flex items-center gap-4 p-4 border-b cursor-pointer" style={{ borderColor: 'var(--card-border)', background: 'var(--bg-base)' }} onClick={(e) => {
+                      if ((e.target as HTMLElement).closest('button, input, a, label')) return;
+                      catCtl.toggleSelected(cat.id);
+                    }}>
+                      <input
+                        type="checkbox" aria-label={`Select ${cat.name}`}
+                        checked={catCtl.isSelected(cat.id)}
+                        onChange={() => catCtl.toggleSelected(cat.id)}
+                        className="w-4 h-4 shrink-0 accent-(--green)"
+                      />
                       <button onClick={() => setExpandedCat(isExpanded ? null : cat.id)} className="p-1 hover:bg-black/5 rounded">
                         {isExpanded ? <ChevronDown className="w-5 h-5"/> : <ChevronRight className="w-5 h-5"/>}
                       </button>
                       
                       <div className="flex flex-col gap-1 w-20">
-                         <label className="text-[10px] font-bold uppercase text-[var(--text-muted)] flex items-center gap-1"><ArrowUpDown className="w-3 h-3"/> Order</label>
+                         <button type="button" onClick={catCtl.toggleOrder} title="Ubah urutan (asc/desc)"
+                           className="text-[10px] font-bold uppercase text-(--text-muted) flex items-center gap-1 hover:text-(--text-primary)">
+                           <ArrowUpDown className="w-3 h-3" /> Order {catDir === 'asc' ? '↑' : '↓'}
+                         </button>
                          <input 
                             type="number" className="w-full px-2 py-1 bg-transparent border-b text-sm font-mono focus:outline-none" style={{ borderColor: 'var(--card-border)' }}
                             value={cat.sort_order}
@@ -138,7 +229,7 @@ export default function SkillsAdmin() {
                       
                       <div className="flex-1">
                          <input 
-                            type="text" className="w-full px-3 py-1.5 bg-transparent text-lg font-bold font-montserrat focus:outline-none border-b border-transparent focus:border-[var(--green)]" 
+                            type="text" className="w-full px-3 py-1.5 bg-transparent text-lg font-bold font-montserrat focus:outline-none border-b border-transparent focus:border-(--green)" 
                             value={cat.name}
                             onChange={e => setCategories(categories.map(c => c.id === cat.id ? {...c, name: e.target.value} : c))}
                             onBlur={e => saveCategory(cat.id, { name: e.target.value })}
@@ -146,7 +237,7 @@ export default function SkillsAdmin() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <button onClick={() => { setExpandedCat(cat.id); handleAddSkill(cat.id); }} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm bg-[var(--green-dim)] text-[var(--green)] hover:opacity-80 transition-opacity whitespace-nowrap">
+                        <button onClick={() => { setExpandedCat(cat.id); handleAddSkill(cat.id); }} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm bg-(--green-dim) text-(--green) hover:opacity-80 transition-opacity whitespace-nowrap">
                           <Plus className="w-4 h-4" /> Add Skill
                         </button>
                         <button onClick={() => deleteCategory(cat.id)} className="text-red-500 hover:bg-red-500/10 p-2 rounded-lg transition-colors">
@@ -158,7 +249,7 @@ export default function SkillsAdmin() {
                     {/* Skills List (Children) */}
                     {isExpanded && (
                       <div className="p-4 bg-transparent divide-y" style={{ borderColor: 'var(--card-border)' }}>
-                        {catSkills.length === 0 && <p className="text-center text-sm py-4 text-[var(--text-muted)]">No skills in this category yet.</p>}
+                        {catSkills.length === 0 && <p className="text-center text-sm py-4 text-(--text-muted)">No skills in this category yet.</p>}
                         
                         {catSkills.map(skill => (
                           <div key={skill.id} className="grid grid-cols-12 gap-4 py-3 items-center hover:bg-black/5 transition-colors group">
@@ -172,16 +263,16 @@ export default function SkillsAdmin() {
                               </div>
                               <div className="col-span-10 md:col-span-5 pr-4 md:pr-0">
                                 <input 
-                                  type="text" placeholder="Skill Name (e.g. React)" className="w-full px-3 py-1.5 rounded border bg-[var(--bg-base)] text-sm font-semibold" style={{ borderColor: 'var(--input-border)' }}
+                                  type="text" placeholder="Skill Name (e.g. React)" className="w-full px-3 py-1.5 rounded border bg-(--bg-base) text-sm font-semibold" style={{ borderColor: 'var(--input-border)' }}
                                   value={skill.name}
                                   onChange={e => setSkills(skills.map(s => s.id === skill.id ? {...s, name: e.target.value} : s))}
                                   onBlur={e => saveSkill(skill.id, { name: e.target.value })}
                                 />
                               </div>
                               <div className="col-span-10 col-start-3 md:col-span-5 md:col-start-auto relative">
-                                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+                                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text-muted)" />
                                 <input 
-                                  type="url" placeholder="URL (Optional, e.g. https://...)" className="w-full pl-9 pr-3 py-1.5 rounded border bg-[var(--bg-base)] text-sm" style={{ borderColor: 'var(--input-border)' }}
+                                  type="url" placeholder="URL (Optional, e.g. https://...)" className="w-full pl-9 pr-3 py-1.5 rounded border bg-(--bg-base) text-sm" style={{ borderColor: 'var(--input-border)' }}
                                   value={skill.url || ''}
                                   onChange={e => setSkills(skills.map(s => s.id === skill.id ? {...s, url: e.target.value} : s))}
                                   onBlur={e => saveSkill(skill.id, { url: e.target.value })}
@@ -199,6 +290,7 @@ export default function SkillsAdmin() {
                   </div>
                 );
               })}
+              <PaginationControls page={catPg.page} pageSize={catPg.pageSize} total={catPg.total} onChange={catPg.setPage} />
             </div>
           )}
        </div>

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { marked } from 'marked';
 import { supabase } from '../lib/supabase';
 import type { BlogPost } from '../types';
@@ -79,7 +80,7 @@ export default function BlogDetail({ slug }: { slug: string }) {
       {/* Back */}
       <Link
         href="/blog"
-        className="inline-flex items-center gap-1 text-sm mb-6 transition-colors hover:text-[var(--green)]"
+        className="inline-flex items-center gap-1 text-sm mb-6 transition-colors hover:text-(--green)"
         style={{ color: 'var(--text-muted)' }}
       >
         ← Kembali ke Blog
@@ -87,12 +88,16 @@ export default function BlogDetail({ slug }: { slug: string }) {
 
       {/* Cover image */}
       {post.cover_url && (
-        <img
-          src={post.cover_url}
-          alt={post.title}
-          className="w-full rounded-xl mb-6 border"
-          style={{ borderColor: 'var(--card-border)' }}
-        />
+        <div className="relative w-full aspect-[16/9] rounded-xl mb-6 border overflow-hidden" style={{ borderColor: 'var(--card-border)' }}>
+          <Image
+            src={post.cover_url}
+            alt={post.title}
+            fill
+            sizes="100vw"
+            priority
+            className="object-cover"
+          />
+        </div>
       )}
 
       {/* Header */}

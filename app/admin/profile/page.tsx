@@ -4,6 +4,7 @@ import AdminSidebar from '../../../src/components/AdminSidebar';
 import AdminToast from '../../../src/components/AdminToast';
 import { supabase } from '../../../src/lib/supabase';
 import type { Profile } from '../../../src/types';
+import FileUploader from '../../../src/components/FileUploader';
 import { Save, Loader2, Camera, Link as LinkIcon, Edit3 } from 'lucide-react';
 
 export default function ProfileAdmin() {
@@ -82,7 +83,7 @@ export default function ProfileAdmin() {
               <div className="space-y-6">
                 <div className="p-6 rounded-2xl border" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
                   <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <Edit3 className="w-5 h-5 text-[var(--green)]" /> Basic Info
+                    <Edit3 className="w-5 h-5 text-(--green)" /> Basic Info
                   </h2>
                   <div className="space-y-4">
                     <div>
@@ -91,7 +92,7 @@ export default function ProfileAdmin() {
                         type="text" required
                         value={profile.full_name}
                         onChange={e => setProfile({...profile, full_name: e.target.value})}
-                        className="w-full px-4 py-2 rounded-lg border bg-transparent outline-none focus:border-[var(--green)]"
+                        className="w-full px-4 py-2 rounded-lg border bg-transparent outline-none focus:border-(--green)"
                         style={{ borderColor: 'var(--input-border)', color: 'var(--text-primary)' }}
                       />
                     </div>
@@ -101,7 +102,7 @@ export default function ProfileAdmin() {
                         type="text" required
                         value={profile.tagline}
                         onChange={e => setProfile({...profile, tagline: e.target.value})}
-                        className="w-full px-4 py-2 rounded-lg border bg-transparent outline-none focus:border-[var(--green)]"
+                        className="w-full px-4 py-2 rounded-lg border bg-transparent outline-none focus:border-(--green)"
                         style={{ borderColor: 'var(--input-border)', color: 'var(--text-primary)' }}
                       />
                     </div>
@@ -120,7 +121,7 @@ export default function ProfileAdmin() {
                         value={profile.instagram_url || ''}
                         onChange={e => setProfile({...profile, instagram_url: e.target.value})}
                         placeholder="https://instagram.com/..."
-                        className="w-full px-4 py-2 rounded-lg border bg-transparent outline-none focus:border-[var(--green)]"
+                        className="w-full px-4 py-2 rounded-lg border bg-transparent outline-none focus:border-(--green)"
                         style={{ borderColor: 'var(--input-border)', color: 'var(--text-primary)' }}
                       />
                     </div>
@@ -131,18 +132,26 @@ export default function ProfileAdmin() {
                         value={profile.github_url || ''}
                         onChange={e => setProfile({...profile, github_url: e.target.value})}
                         placeholder="https://github.com/..."
-                        className="w-full px-4 py-2 rounded-lg border bg-transparent outline-none focus:border-[var(--green)]"
+                        className="w-full px-4 py-2 rounded-lg border bg-transparent outline-none focus:border-(--green)"
                         style={{ borderColor: 'var(--input-border)', color: 'var(--text-primary)' }}
                       />
                     </div>
                     <div>
-                      <InputLabel>CV / Resume Document URL</InputLabel>
+                      <InputLabel>CV / Resume Document</InputLabel>
+                      <FileUploader
+                        folder="cv"
+                        compact
+                        value={profile.cv_url || ''}
+                        onChange={url => setProfile({ ...profile, cv_url: url })}
+                        accept=".pdf,.doc,.docx"
+                        hint="Unggah file PDF CV (maks 5MB)"
+                      />
                       <input 
                         type="text"
                         value={profile.cv_url || ''}
                         onChange={e => setProfile({...profile, cv_url: e.target.value})}
-                        placeholder="/cv.pdf OR https://..."
-                        className="w-full px-4 py-2 rounded-lg border bg-transparent outline-none focus:border-[var(--green)]"
+                        placeholder="atau tempel URL CV di sini..."
+                        className="mt-2 w-full px-4 py-2 text-sm rounded-lg border bg-transparent outline-none focus:border-(--green)"
                         style={{ borderColor: 'var(--input-border)', color: 'var(--text-primary)' }}
                       />
                     </div>
@@ -157,24 +166,23 @@ export default function ProfileAdmin() {
                     <Camera className="w-5 h-5 text-purple-500" /> Photo & Bio
                   </h2>
                   
-                  <div className="mb-6 flex items-start gap-4">
-                     <img 
-                       src={profile.photo_url || '/img/MyFoto.png'} 
-                       alt="Profile Preview" 
-                       className="w-20 h-20 rounded-full border-2 object-cover"
-                       style={{ borderColor: 'var(--green)' }}
-                     />
-                     <div className="flex-1">
-                       <InputLabel>Photo Image URL</InputLabel>
-                        <input 
-                          type="text"
-                          value={profile.photo_url || ''}
-                          onChange={e => setProfile({...profile, photo_url: e.target.value})}
-                          placeholder="/img/MyFoto.png OR https://..."
-                          className="w-full px-4 py-2 text-sm rounded-lg border bg-transparent outline-none focus:border-[var(--green)]"
-                          style={{ borderColor: 'var(--input-border)', color: 'var(--text-primary)' }}
-                        />
-                     </div>
+                  <div className="mb-6">
+                    <FileUploader
+                      folder="photos"
+                      shape="circle"
+                      value={profile.photo_url || ''}
+                      onChange={url => setProfile({ ...profile, photo_url: url })}
+                      label="Photo"
+                      hint="Unggah foto (gambar dikompres otomatis)"
+                    />
+                    <input 
+                      type="text"
+                      value={profile.photo_url || ''}
+                      onChange={e => setProfile({...profile, photo_url: e.target.value})}
+                      placeholder="atau tempel URL foto di sini..."
+                      className="mt-2 w-full px-4 py-2 text-sm rounded-lg border bg-transparent outline-none focus:border-(--green)"
+                      style={{ borderColor: 'var(--input-border)', color: 'var(--text-primary)' }}
+                    />
                   </div>
 
                   <div className="space-y-4">
@@ -188,7 +196,7 @@ export default function ProfileAdmin() {
                         required rows={10}
                         value={profile.bio || ''}
                         onChange={e => setProfile({...profile, bio: e.target.value})}
-                        className="w-full px-4 py-3 rounded-lg border bg-transparent font-mono text-sm outline-none focus:border-[var(--green)] resize-y"
+                        className="w-full px-4 py-3 rounded-lg border bg-transparent font-mono text-sm outline-none focus:border-(--green) resize-y"
                         style={{ borderColor: 'var(--input-border)', color: 'var(--text-primary)' }}
                         placeholder="Write your biography here..."
                       />

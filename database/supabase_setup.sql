@@ -9,10 +9,16 @@
 DROP TABLE IF EXISTS contact_messages CASCADE;
 DROP TABLE IF EXISTS blogs CASCADE;
 DROP TABLE IF EXISTS skills CASCADE;
+DROP TABLE IF EXISTS skill_categories CASCADE;
 DROP TABLE IF EXISTS projects CASCADE;
 DROP TABLE IF EXISTS education_history CASCADE;
 DROP TABLE IF EXISTS work_experiences CASCADE;
+DROP TABLE IF EXISTS publications CASCADE;
+DROP TABLE IF EXISTS hki CASCADE;
+DROP TABLE IF EXISTS certifications CASCADE;
+DROP TABLE IF EXISTS settings CASCADE;
 DROP TABLE IF EXISTS profile CASCADE;
+DROP TABLE IF EXISTS experiences CASCADE;
 
 -- 2. Create Profile Table (Single Row)
 CREATE TABLE profile (
@@ -50,7 +56,7 @@ CREATE TABLE education_history (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 5. Create Projects Table (For /work page)
+-- 5. Create Projects Table (For /projects page)
 CREATE TABLE projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
@@ -104,6 +110,63 @@ CREATE TABLE contact_messages (
 );
 
 -- ==========================================
+-- NEW: HKI / PUBLICATIONS / CERTIFICATIONS / SETTINGS
+-- ==========================================
+
+-- 9. Create Publications Table (Untuk /publikasi)
+CREATE TABLE publications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  authors TEXT NOT NULL,
+  venue TEXT NOT NULL,
+  year INTEGER,
+  type TEXT NOT NULL DEFAULT 'journal', -- journal | conference | proceeding | book
+  index_type TEXT,
+  doi_url TEXT,
+  url TEXT,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 10. Create HKI Table (Hak Kekayaan Intelektual)
+CREATE TABLE hki (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'copyright_software', -- patent | copyright_creator | copyright_software | trademark | industrial_design
+  registration_number TEXT,
+  status TEXT,
+  holder TEXT,
+  grant_date DATE,
+  description TEXT,
+  image_url TEXT,
+  document_url TEXT,
+  url TEXT,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 11. Create Certifications Table
+CREATE TABLE certifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  issuer TEXT NOT NULL,
+  issue_date DATE,
+  expiration_date DATE,
+  credential_id TEXT,
+  credential_url TEXT,
+  image_url TEXT,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 12. Create Settings Table (Single Row, JSON data)
+CREATE TABLE settings (
+  id TEXT PRIMARY KEY DEFAULT 'primary',
+  data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ==========================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ==========================================
 -- Goal: 
@@ -118,6 +181,10 @@ ALTER TABLE skill_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blogs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE publications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE hki ENABLE ROW LEVEL SECURITY;
+ALTER TABLE certifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 
 -- PUBLIC READ POLICIES
 CREATE POLICY "Public profiles are viewable by everyone." 
@@ -134,6 +201,14 @@ CREATE POLICY "Public skills are viewable by everyone."
   ON skills FOR SELECT USING (true);
 CREATE POLICY "Public blogs are viewable by everyone if published." 
   ON blogs FOR SELECT USING (is_published = true OR auth.role() = 'authenticated');
+CREATE POLICY "Public publications are viewable by everyone." 
+  ON publications FOR SELECT USING (true);
+CREATE POLICY "Public hki are viewable by everyone." 
+  ON hki FOR SELECT USING (true);
+CREATE POLICY "Public certifications are viewable by everyone." 
+  ON certifications FOR SELECT USING (true);
+CREATE POLICY "Public settings are viewable by everyone." 
+  ON settings FOR SELECT USING (true);
   
 -- CONTACT MESSAGES (Public Insert, Authenticated Read)
 CREATE POLICY "Anyone can submit a contact message."
@@ -158,6 +233,37 @@ CREATE POLICY "Admins can manage blogs."
   ON blogs FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Admins can manage contact_messages." 
   ON contact_messages FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Admins can manage publications." 
+  ON publications FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Admins can manage hki." 
+  ON hki FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Admins can manage certifications." 
+  ON certifications FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Admins can manage settings." 
+  ON settings FOR ALL USING (auth.role() = 'authenticated');
+
+-- ==========================================
+-- STORAGE: PUBLIC BUCKET "media" (max 5MB)
+-- ==========================================
+-- Bucket public = file bisa diakses via public URL CDN.
+-- Tidak ada policy SELECT publik di storage.objects
+-- (listing diblokir; akses file tetap via public URL bucket).
+INSERT INTO storage.buckets (id, name, public, file_size_limit)
+VALUES ('media', 'media', true, 5242880)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "Authenticated users can upload files"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'media');
+CREATE POLICY "Authenticated users can update files"
+  ON storage.objects FOR UPDATE TO authenticated
+  USING (bucket_id = 'media');
+CREATE POLICY "Authenticated users can delete files"
+  ON storage.objects FOR DELETE TO authenticated
+  USING (bucket_id = 'media');
+CREATE POLICY "Authenticated users can read storage files"
+  ON storage.objects FOR SELECT TO authenticated
+  USING (bucket_id = 'media');
 
 -- ==========================================
 -- INSERT DEFAULT PROFILE
@@ -174,4 +280,14 @@ I am a curious and persistent individual who is genuinely passionate about probl
   '/cv.pdf',
   'https://www.instagram.com/rifaa_srjdn/',
   'https://github.com/KnowRise'
+);
+
+-- ==========================================
+-- INSERT DEFAULT SETTINGS (menu visibility)
+-- ==========================================
+INSERT INTO settings (id, data, updated_at)
+VALUES (
+  'primary',
+  '{"menu_visibility":{"home":true,"experience":true,"projects":true,"skills":true,"blog":true,"contact":true,"hki":true,"publikasi":true,"sertifikasi":true}}'::jsonb,
+  NOW()
 );

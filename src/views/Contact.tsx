@@ -1,16 +1,18 @@
+'use client';
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 
 interface FormState {
   name: string;
   email: string;
+  subject: string;
   message: string;
 }
 
 type Status = 'idle' | 'sending' | 'success' | 'error';
 
 export default function Contact() {
-  const [form, setForm] = useState<FormState>({ name: '', email: '', message: '' });
+  const [form, setForm] = useState<FormState>({ name: '', email: '', subject: '', message: '' });
   const [status, setStatus] = useState<Status>('idle');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -23,15 +25,15 @@ export default function Contact() {
     try {
       if (supabase) {
         const { error } = await supabase.from('contact_messages').insert([
-          { name: form.name, email: form.email, message: form.message },
+          { name: form.name, email: form.email, subject: form.subject, message: form.message },
         ]);
         if (error) throw error;
       } else {
         // Fallback: open email client
-        window.location.href = `mailto:rifaasiraajuddin.123@gmail.com?subject=Portfolio Contact: ${form.name}&body=${form.message}`;
+        window.location.href = `mailto:rifaasiraajuddin.123@gmail.com?subject=${encodeURIComponent(form.subject)}&body=${form.message}`;
       }
       setStatus('success');
-      setForm({ name: '', email: '', message: '' });
+      setForm({ name: '', email: '', subject: '', message: '' });
     } catch {
       setStatus('error');
     }
@@ -83,6 +85,7 @@ export default function Contact() {
           {[
             { name: 'name', label: 'Nama', type: 'text', placeholder: 'Nama kamu' },
             { name: 'email', label: 'Email', type: 'email', placeholder: 'email@kamu.com' },
+            { name: 'subject', label: 'Subjek', type: 'text', placeholder: 'Subjek pesanmu' },
           ].map(({ name, label, type, placeholder }) => (
             <div key={name} className="flex flex-col gap-1">
               <label className="text-xs font-semibold font-montserrat uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
@@ -95,7 +98,7 @@ export default function Contact() {
                 onChange={handleChange}
                 placeholder={placeholder}
                 required
-                className="rounded-lg px-4 py-2.5 text-sm border outline-none focus:border-[var(--green)] transition-colors"
+                className="rounded-lg px-4 py-2.5 text-sm border outline-none focus:border-(--green) transition-colors"
                 style={inputStyle}
               />
             </div>
@@ -112,7 +115,7 @@ export default function Contact() {
               placeholder="Hai Rifaa, aku mau ngobrol soal..."
               rows={5}
               required
-              className="rounded-lg px-4 py-2.5 text-sm border outline-none focus:border-[var(--green)] transition-colors resize-y"
+              className="rounded-lg px-4 py-2.5 text-sm border outline-none focus:border-(--green) transition-colors resize-y"
               style={inputStyle}
             />
           </div>

@@ -1,4 +1,6 @@
+import Image from 'next/image';
 import Link from 'next/link';
+import { FileText } from 'lucide-react';
 import type { BlogCardProps } from '../types';
 
 export default function BlogCard({ post }: BlogCardProps) {
@@ -15,39 +17,61 @@ export default function BlogCard({ post }: BlogCardProps) {
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className="block rounded-xl border p-5 transition-all duration-200 hover:-translate-y-0.5 group"
+      className="group block overflow-hidden rounded-xl border transition-all duration-200 hover:-translate-y-0.5 flex flex-col"
       style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
       data-aos="fade-up"
     >
-      {/* Meta row */}
-      <div className="flex flex-wrap gap-2 items-center mb-3">
-        {date && (
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{date}</span>
-        )}
-        {post.tags.map((tag) => (
-          <span
-            key={tag}
-            className="text-xs font-semibold px-2 py-0.5 rounded-full"
-            style={{ background: 'var(--green-tag-bg)', color: 'var(--green-tag-text)' }}
+      {/* Cover */}
+      <div className="relative aspect-video w-full overflow-hidden">
+        {post.cover_url ? (
+          <Image
+            src={post.cover_url}
+            alt={`Cover untuk ${post.title}`}
+            fill
+            sizes="(min-width: 768px) 50vw, 100vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div
+            className="flex w-full h-full items-center justify-center"
+            style={{ background: 'var(--tag-bg)' }}
           >
-            {tag}
-          </span>
-        ))}
+            <FileText className="w-10 h-10" style={{ color: 'var(--text-muted)' }} />
+          </div>
+        )}
       </div>
 
-      <h3 className="font-bold font-montserrat mb-2 group-hover:text-[var(--green)] transition-colors" style={{ color: 'var(--text-primary)' }}>
-        {post.title}
-      </h3>
+      <div className="flex flex-col flex-1 p-5">
+        {/* Meta row */}
+        <div className="flex flex-wrap gap-2 items-center mb-3">
+          {date && (
+            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{date}</span>
+          )}
+          {post.tags.map((tag) => (
+            <span
+              key={tag}
+              className="text-xs font-semibold px-2 py-0.5 rounded-full"
+              style={{ background: 'var(--green-tag-bg)', color: 'var(--green-tag-text)' }}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
 
-      {post.excerpt && (
-        <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--text-secondary)' }}>
-          {post.excerpt}
-        </p>
-      )}
+        <h3 className="font-bold font-montserrat mb-2 group-hover:text-(--green) transition-colors" style={{ color: 'var(--text-primary)' }}>
+          {post.title}
+        </h3>
 
-      <span className="text-xs font-semibold" style={{ color: 'var(--green)' }}>
-        Baca selengkapnya ({readTime} menit) →
-      </span>
+        {post.excerpt && (
+          <p className="text-sm leading-relaxed mb-3 line-clamp-3" style={{ color: 'var(--text-secondary)' }}>
+            {post.excerpt}
+          </p>
+        )}
+
+        <span className="text-xs font-semibold mt-auto" style={{ color: 'var(--green)' }}>
+          Baca selengkapnya ({readTime} menit) →
+        </span>
+      </div>
     </Link>
   );
 }
