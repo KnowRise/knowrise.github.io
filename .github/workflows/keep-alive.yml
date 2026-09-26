@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '17 6 * * *'      # 06:17 UTC, JAUH dari menit :00 (GitHub peak load)
   workflow_dispatch:           # biar bisa kau tes manual sekarang
+    inputs:
+      force:
+        description: 'Paksa commit keepalive (untuk testing jalur push)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write              # WAJIB - default GITHUB_TOKEN sekarang read-only
@@ -15,6 +20,7 @@ concurrency:
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
         with:
@@ -34,13 +40,19 @@ jobs:
 
       - name: Monthly keepalive commit
         if: always()
+        env:
+          FORCE: ${{ inputs.force }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           last=$(git log -1 --format=%ct)
           age=$(( ( $(date +%s) - last ) / 86400 ))
           echo "commit terakhir ${age} hari lalu"
-          [ "$age" -lt 30 ] && { echo "masih muda, skip"; exit 0; }
+          force_lc=$(printf '%s' "$FORCE" | tr '[:upper:]' '[:lower:]')
+          if [ "$age" -lt 30 ] && [ "$force_lc" != "true" ]; then
+            echo "masih muda, skip"
+            exit 0
+          fi
           mkdir -p docs
           echo "- $(date -u +%Y-%m-%d) automated keepalive" >> docs/keepalive.log
           git add docs/keepalive.log
