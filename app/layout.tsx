@@ -4,6 +4,7 @@ import Navbar from '../src/components/Navbar';
 import Footer from '../src/components/Footer';
 import ClientLayoutWrapper from '../src/components/ClientLayoutWrapper';
 import { supabase } from '../src/lib/supabase';
+import { getSettings } from '../src/lib/settings';
 
 import type { Metadata } from 'next';
 
@@ -57,11 +58,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const settings = await getSettings();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased font-source-serif-4 bg-(--bg-base) text-(--text-primary) transition-colors duration-300 overflow-x-hidden min-h-screen">
@@ -74,7 +77,7 @@ export default function RootLayout({
           </div>
 
           <ClientLayoutWrapper>
-            <Navbar />
+            <Navbar settings={settings} />
             <main className="flex-grow">
               {children}
             </main>

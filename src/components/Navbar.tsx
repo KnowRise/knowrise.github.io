@@ -4,14 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '../context/ThemeContext';
-import { useSettings } from '../hooks/useSettings';
 import { MENU_KEYS, isMenuVisible, menuLabel } from '../lib/settings';
-import type { MenuKey } from '../types';
+import type { MenuKey, Settings } from '../types';
 
-export default function Navbar() {
+export default function Navbar({ settings }: { settings: Settings['data'] }) {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
-  const settings = useSettings();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -29,9 +27,7 @@ export default function Navbar() {
     return null;
   }
 
-  const visibleKeys: MenuKey[] = settings
-    ? MENU_KEYS.filter((key) => isMenuVisible(settings, key))
-    : MENU_KEYS;
+  const visibleKeys: MenuKey[] = MENU_KEYS.filter((key) => isMenuVisible(settings, key));
 
   const links = visibleKeys.map((key) => ({
     to: key === 'home' ? '/' : `/${key}`,
