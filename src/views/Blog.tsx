@@ -46,7 +46,10 @@ export default function Blog() {
         const esc = term.replace(/[%_]/g, (m) => '\\' + m);
         query = query.or(`title.ilike.%${esc}%,excerpt.ilike.%${esc}%`);
       }
-      const { data, count } = await query.order('published_at', { ascending: false }).range(pg.from, pg.to);
+      // nullsFirst: false karena default Postgres untuk DESC adalah
+      // NULLS FIRST, yang membuat post tanpa published_at mendongkar di
+      // urutan paling atas.
+      const { data, count } = await query.order('published_at', { ascending: false, nullsFirst: false }).range(pg.from, pg.to);
       setPosts((data || []) as BlogPost[]);
       if (count !== null) pg.setTotal(count);
     } else {

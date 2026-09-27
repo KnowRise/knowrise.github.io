@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { MenuKey, Settings } from '../types';
+import type { MenuKey, MenuVisibility, Settings } from '../types';
 
 export const MENU_KEYS: MenuKey[] = [
   'home',
@@ -21,17 +21,21 @@ export const DEFAULT_SETTINGS: Settings['data'] = {
 
 function mergeSettings(raw?: Settings['data'] | null): Settings['data'] {
   const rawVis = (raw?.menu_visibility as Record<string, boolean> | undefined) || {};
-  // Migrasi kunci lama 'work' -> 'projects' (DB masih menyimpan preferensi versi lama)
+  // 'work' -> 'projects' (DB masih menyimpan preferensi versi lama).
+  // Hanya dipakai kalau 'projects' belum pernah ada, supaya preferensi
+  // 'projects' yang sudah disimpan admin tidak tertimpa nilai lama.
+  const { work: legacyWork, ...rest } = rawVis;
   const migrated: Record<string, boolean> = {};
-  if ('work' in rawVis) {
-    migrated.projects = rawVis.work;
-    migrated.work = true;
+  if (typeof legacyWork === 'boolean' && !('projects' in rest)) {
+    migrated.projects = legacyWork;
   }
+  // 'work' sengaja dibuang di sini, bukan dimasukkan ke hasil merge,
+  // supaya tidak ikut ter-upsert balik ke DB setiap kali setting disimpan.
   const visibility = {
     ...ALL_VISIBLE,
     ...migrated,
-    ...rawVis,
-  } as Record<MenuKey, boolean>;
+    ...rest,
+  } as MenuVisibility;
   return {
     ...DEFAULT_SETTINGS,
     ...(raw || {}),
@@ -41,12 +45,26 @@ function mergeSettings(raw?: Settings['data'] | null): Settings['data'] {
 
 export async function getSettings(): Promise<Settings['data']> {
   if (!supabase) return DEFAULT_SETTINGS;
-  try {
-    const { data } = await supabase.from('settings').select('data').single();
-    return mergeSettings(data?.data);
-  } catch {
+  // maybeSingle() + .eq('id','primary'), bukan .single() polos: baris ini
+  // wajib ada, tapi .single() melempar PGRST116 kalau tabel kosong atau
+  // isinya dobel, dan supabase-js tidak melempar error (dia resolve di
+  // field `error`), jadi try/catch tidak akan menangkap apa pun. Karena
+  // itu error-nya harus dicek eksplisit — kalau tidak, kegagalan diam-diam
+  // jadi DEFAULT_SETTINGS yang membuat semua menu terlihat.
+  const { data, error } = await supabase
+    .from('settings')
+    .select('data')
+    .eq('id', 'primary')
+    .maybeSingle();
+  if (error) {
+    console.error('[settings] gagal memuat settings:', error.message);
     return DEFAULT_SETTINGS;
   }
+  if (!data) {
+    console.error("[settings] tidak ada baris settings dengan id 'primary'");
+    return DEFAULT_SETTINGS;
+  }
+  return mergeSettings(data.data);
 }
 
 export function isMenuVisible(settings: Settings['data'], key: MenuKey): boolean {

@@ -15,9 +15,30 @@ export default function ProfileAdmin() {
 
   useEffect(() => {
     async function fetchProfile() {
-      if (!supabase) return;
-      const { data } = await supabase.from('profile').select('*').single();
-      if (data) setProfile(data as Profile);
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+      // maybeSingle() + .eq('id','primary'), bukan .single() polos: satu baris
+      // 'primary' dijamin ada, tapi .single() melempar PGRST116 kalau tabel
+      // kosong atau ada baris dobel, dan supabase-js resolve error-nya
+      // (tidak melempar), jadi harus dicek manual.
+      const { data, error } = await supabase
+        .from('profile')
+        .select('*')
+        .eq('id', 'primary')
+        .maybeSingle();
+      if (error) {
+        setToast({ msg: 'Gagal memuat profile dari database.', type: 'error' });
+        setLoading(false);
+        return;
+      }
+      if (!data) {
+        setToast({ msg: "Tidak ada baris profile dengan id 'primary'.", type: 'error' });
+        setLoading(false);
+        return;
+      }
+      setProfile(data as Profile);
       setLoading(false);
     }
     fetchProfile();

@@ -1,0 +1,15 @@
+-- Kembalikan grant schema public ke pg_database_owner
+--
+-- `DROP SCHEMA public CASCADE; CREATE SCHEMA public` membuat schema public
+-- dimiliki eksplisit oleh role postgres. Setelah itu, grant default
+-- PostgreSQL untuk pg_database_owner (pemilik implisit schema public)
+-- ikut hilang.
+--
+-- Dampaknya kecil: pg_database_owner hanya relevan untuk schema yang
+-- dimiliki database owner, dan public sekarang dimiliki postgres secara
+-- eksplisit. Tapi sebagian tooling bawaan Supabase bergantung pada grant
+-- ini, dan tanpa itu `supabase db diff --linked` tidak pernah nol --
+-- yang membuat db diff tidak bisa dipakai sebagai detektor drift.
+--
+-- Tidak ada hubungannya dengan tabel, RLS, atau data.
+GRANT USAGE, CREATE ON SCHEMA public TO pg_database_owner;

@@ -115,7 +115,9 @@ export default function FileUploader({
         <div className="mt-3 relative group">
           <div className={`overflow-hidden ${previewWrapClass}`} style={{ borderColor: 'var(--card-border)' }}>
             {isImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
+              // Sengaja <img>, bukan next/image: ini preview sebelum
+              // disimpan, URL-nya bisa dari bucket mana pun dan belum
+              // tentu lolos remotePatterns.
               <img src={value} alt="Preview" className={previewClass} />
             ) : (
               <div className={`${previewClass} flex flex-col items-center justify-center gap-2`} style={{ background: 'var(--tag-bg)' }}>

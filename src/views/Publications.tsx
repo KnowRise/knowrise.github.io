@@ -42,7 +42,10 @@ export default function Publications() {
         query = query.or(`title.ilike.%${esc}%,authors.ilike.%${esc}%,venue.ilike.%${esc}%`);
       }
       const { data, count } = await query
-        .order('year', { ascending: false })
+        // nullsFirst: false karena default Postgres untuk DESC adalah
+        // NULLS FIRST, yang membuat publikasi tanpa tahun muncul di
+        // urutan paling atas.
+        .order('year', { ascending: false, nullsFirst: false })
         .order('sort_order', { ascending: true })
         .range(pg.from, pg.to);
       setItems((data || []) as Publication[]);

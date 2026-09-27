@@ -2,13 +2,15 @@
 import { useEffect, useState } from 'react';
 import AdminSidebar from '../../../src/components/AdminSidebar';
 import AdminToast from '../../../src/components/AdminToast';
-import { getSettings, updateSettings, MENU_KEYS, menuLabelFull } from '../../../src/lib/settings';
+import { getSettings, updateSettings, MENU_KEYS, menuLabelFull, DEFAULT_SETTINGS } from '../../../src/lib/settings';
 import type { MenuKey, MenuVisibility, Settings } from '../../../src/types';
 import { Save, Loader2, Eye, FileJson } from 'lucide-react';
 
 export default function SettingsAdmin() {
   const [settings, setSettings] = useState<Settings['data'] | null>(null);
-  const [visibility, setVisibility] = useState<Partial<MenuVisibility>>({});
+  // Non-Partial: getSettings()/mergeSettings() selalu melengkapi 9 kunci
+  // MENU_KEYS sebelum mengembalikannya, jadi state ini memang selalu penuh.
+  const [visibility, setVisibility] = useState<MenuVisibility>(DEFAULT_SETTINGS.menu_visibility);
   const [otherJson, setOtherJson] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -19,7 +21,7 @@ export default function SettingsAdmin() {
     (async () => {
       const data = await getSettings();
       setSettings(data);
-      setVisibility((data.menu_visibility || {}) as Partial<MenuVisibility>);
+      setVisibility(data.menu_visibility ?? DEFAULT_SETTINGS.menu_visibility);
       const { menu_visibility, ...rest } = data;
       setOtherJson(JSON.stringify(rest, null, 2));
       setLoading(false);
@@ -58,7 +60,7 @@ export default function SettingsAdmin() {
     if (error) notify('Gagal menyimpan JSON.', 'error');
     else {
       notify('JSON tersimpan!', 'success');
-      setSettings({ menu_visibility: visibility, ...parsed });
+      setSettings({ ...parsed, menu_visibility: visibility });
     }
   }
 

@@ -8,6 +8,7 @@ import { usePagination } from '../../../src/hooks/usePagination';
 import { useDebouncedValue } from '../../../src/hooks/useDebouncedValue';
 import { useResourceControls } from '../../../src/hooks/useResourceControls';
 import { bulkDeleteByIds } from '../../../src/lib/bulkDelete';
+import { nextSortOrder } from '../../../src/lib/sortOrder';
 import PaginationControls from '../../../src/components/PaginationControls';
 import AdminListToolbar from '../../../src/components/AdminListToolbar';
 import { Plus, Trash2, Loader2, LayoutGrid, ArrowUpDown, ChevronDown, ChevronRight, Link as LinkIcon } from 'lucide-react';
@@ -51,7 +52,7 @@ export default function SkillsAdmin() {
   /* --- CATEGORY HANDLERS --- */
   const handleAddCategory = async () => {
     if (!supabase) return;
-    const newOrder = categories.length > 0 ? Math.max(...categories.map(c => c.sort_order)) + 1 : 1;
+    const newOrder = await nextSortOrder('skill_categories');
     const { data, error } = await supabase.from('skill_categories').insert([{
       name: 'New Category',
       sort_order: newOrder
@@ -77,14 +78,17 @@ export default function SkillsAdmin() {
   const deleteCategory = async (id: string) => {
     if (!supabase || !confirm('Delete category AND all its skills?')) return;
     const { error } = await supabase.from('skill_categories').delete().eq('id', id);
-    if (!error) {
-      if (categories.length === 1 && catPg.page > 1) {
-        catPg.setPage(catPg.page - 1);
-      } else {
-        setCategories(categories.filter(c => c.id !== id));
-        setSkills(skills.filter(s => s.category_id !== id));
-        catPg.setTotal(Math.max(0, catPg.total - 1));
-      }
+    if (error) {
+      setToast({ msg: 'Gagal menghapus kategori', type: 'error' });
+      setTimeout(() => setToast({ msg: '', type: null }), 2000);
+      return;
+    }
+    if (categories.length === 1 && catPg.page > 1) {
+      catPg.setPage(catPg.page - 1);
+    } else {
+      setCategories(categories.filter(c => c.id !== id));
+      setSkills(skills.filter(s => s.category_id !== id));
+      catPg.setTotal(Math.max(0, catPg.total - 1));
     }
   };
 
@@ -130,8 +134,7 @@ export default function SkillsAdmin() {
   /* --- SKILL HANDLERS --- */
   const handleAddSkill = async (categoryId: string) => {
     if (!supabase) return;
-    const catSkills = skills.filter(s => s.category_id === categoryId);
-    const newOrder = catSkills.length > 0 ? Math.max(...catSkills.map(s => s.sort_order)) + 1 : 1;
+    const newOrder = await nextSortOrder('skills', { category_id: categoryId });
     const { data, error } = await supabase.from('skills').insert([{
       category_id: categoryId,
       name: 'New Skill',

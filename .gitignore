@@ -17,6 +17,10 @@ dist-ssr
 .env
 admin_documentation.md
 
+# Database backups (contain PII / contact messages)
+backups/
+scripts/*.local.sql
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

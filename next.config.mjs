@@ -3,13 +3,16 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
-      // Supabase Storage (project hfvtjobqcxeslpubyajq)
+      // Supabase Storage bucket "media" (project hfvtjobqcxeslpubyajq)
       { protocol: 'https', hostname: 'hfvtjobqcxeslpubyajq.supabase.co' },
       // Legacy GitHub-hosted assets (migrasi bertahap)
       { protocol: 'https', hostname: 'raw.githubusercontent.com' },
-      // Admin boleh tempel URL gambar eksternal apa pun (cover/blog/dll)
-      { protocol: 'https', hostname: '**' },
     ],
+    // Host tetap dua di atas, tapi optimizer tetap dikunci supaya file
+    // yang tidak terduga tidak bisa menyajikan HTML/SVG yang dieksekusi
+    // sebagai bagian dari origin kita sendiri.
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   async redirects() {
     return [

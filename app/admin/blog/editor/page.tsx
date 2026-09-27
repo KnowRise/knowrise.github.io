@@ -59,6 +59,11 @@ function BlogEditorContent() {
     const payload = {
        ...post,
        slug: finalSlug,
+       // Set saat pertama kali dipublish, pertahankan kalau sudah ada.
+       // Tanpa ini post yang dipublish dari editor punya published_at NULL,
+       // yang diurutkan paling atas di Blog.tsx (Postgres NULLS FIRST) dan
+       // tanggalnya tidak tampil di card.
+       published_at: post.is_published ? (post.published_at || new Date().toISOString()) : null,
        updated_at: new Date().toISOString()
     };
 

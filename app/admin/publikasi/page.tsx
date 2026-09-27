@@ -8,6 +8,7 @@ import { usePagination } from '../../../src/hooks/usePagination';
 import { useDebouncedValue } from '../../../src/hooks/useDebouncedValue';
 import { useResourceControls } from '../../../src/hooks/useResourceControls';
 import { bulkDeleteByIds } from '../../../src/lib/bulkDelete';
+import { nextSortOrder } from '../../../src/lib/sortOrder';
 import PaginationControls from '../../../src/components/PaginationControls';
 import AdminListToolbar from '../../../src/components/AdminListToolbar';
 import { Plus, Trash2, ArrowUpDown, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
@@ -49,13 +50,16 @@ export default function PublicationsAdmin() {
 
   const handleAdd = async () => {
     if (!supabase) return;
-    const newSortOrder = items.length > 0 ? Math.max(...items.map(i => i.sort_order)) + 1 : 1;
+    const newSortOrder = await nextSortOrder('publications');
     const { data, error } = await supabase.from('publications').insert([{
       title: 'New Publication',
       authors: 'Penulis',
       venue: 'Journal / Conference',
       year: new Date().getFullYear(),
       type: 'journal',
+      index_type: '',
+      doi_url: '',
+      url: '',
       sort_order: newSortOrder
     }]).select().single();
     if (!error && data) {

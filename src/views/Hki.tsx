@@ -61,7 +61,7 @@ export default function Hki() {
 
       {!loading && (
         <div className="mb-8">
-          <SearchInput value={search} onChange={setSearch} placeholder="Cari judul/tipe/status..." className="max-w-md mx-auto" />
+          <SearchInput value={search} onChange={setSearch} placeholder="Cari judul/tipe/status/pemegang..." className="max-w-md mx-auto" />
         </div>
       )}
 

@@ -9,6 +9,7 @@ import { usePagination } from '../../../src/hooks/usePagination';
 import { useDebouncedValue } from '../../../src/hooks/useDebouncedValue';
 import { useResourceControls } from '../../../src/hooks/useResourceControls';
 import { bulkDeleteByIds } from '../../../src/lib/bulkDelete';
+import { nextSortOrder } from '../../../src/lib/sortOrder';
 import PaginationControls from '../../../src/components/PaginationControls';
 import AdminListToolbar from '../../../src/components/AdminListToolbar';
 import FileUploader from '../../../src/components/FileUploader';
@@ -49,7 +50,7 @@ export default function ProjectsAdmin() {
 
   const handleAddProject = async () => {
     if (!supabase) return;
-    const newSortOrder = projects.length > 0 ? Math.max(...projects.map(p => p.sort_order)) + 1 : 1;
+    const newSortOrder = await nextSortOrder('projects');
     const { data, error } = await supabase.from('projects').insert([{
       title: 'New Project',
       description: 'Project description',

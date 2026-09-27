@@ -9,6 +9,7 @@ import { usePagination } from '../../../src/hooks/usePagination';
 import { useDebouncedValue } from '../../../src/hooks/useDebouncedValue';
 import { useResourceControls } from '../../../src/hooks/useResourceControls';
 import { bulkDeleteByIds } from '../../../src/lib/bulkDelete';
+import { nextSortOrder } from '../../../src/lib/sortOrder';
 import PaginationControls from '../../../src/components/PaginationControls';
 import AdminListToolbar from '../../../src/components/AdminListToolbar';
 import { Plus, Trash2, ArrowUpDown, Loader2, ChevronDown, ChevronRight, FileText } from 'lucide-react';
@@ -38,7 +39,7 @@ export default function HkiAdmin() {
     const term = debouncedSearch.trim();
     if (term) {
       const esc = term.replace(/[%_]/g, (m) => '\\' + m);
-      query = query.or(`title.ilike.%${esc}%,type.ilike.%${esc}%,status.ilike.%${esc}%`);
+      query = query.or(`title.ilike.%${esc}%,type.ilike.%${esc}%,status.ilike.%${esc}%,holder.ilike.%${esc}%`);
     }
     const { data, count } = await query
       .order('sort_order', { ascending: orderDir === 'asc' })
@@ -50,11 +51,17 @@ export default function HkiAdmin() {
 
   const handleAdd = async () => {
     if (!supabase) return;
-    const newSortOrder = items.length > 0 ? Math.max(...items.map(i => i.sort_order)) + 1 : 1;
+    const newSortOrder = await nextSortOrder('hki');
     const { data, error } = await supabase.from('hki').insert([{
       title: 'New HKI',
       type: 'copyright_software',
+      registration_number: '',
       status: 'terdaftar',
+      holder: '',
+      grant_date: null,
+      description: '',
+      document_url: '',
+      url: '',
       sort_order: newSortOrder
     }]).select().single();
     if (!error && data) {
@@ -109,7 +116,7 @@ export default function HkiAdmin() {
     const term = debouncedSearch.trim();
     if (term) {
       const esc = term.replace(/[%_]/g, (m) => '\\' + m);
-      query = query.or(`title.ilike.%${esc}%,type.ilike.%${esc}%,status.ilike.%${esc}%`);
+      query = query.or(`title.ilike.%${esc}%,type.ilike.%${esc}%,status.ilike.%${esc}%,holder.ilike.%${esc}%`);
     }
     const { data } = await query;
     if (data) ctl.setSelectedIds((data as { id: string }[]).map((r) => r.id));
@@ -156,7 +163,7 @@ export default function HkiAdmin() {
         ) : (
           <div className="space-y-3">
             <AdminListToolbar
-              placeholder="Cari HKI (judul/tipe/status)..."
+              placeholder="Cari HKI (judul/tipe/status/pemegang)..."
               search={ctl.search}
               onSearch={ctl.setSearch}
               selectedCount={ctl.selected.size}

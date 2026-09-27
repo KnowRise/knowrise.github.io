@@ -8,6 +8,7 @@ import { usePagination } from '../../../src/hooks/usePagination';
 import { useDebouncedValue } from '../../../src/hooks/useDebouncedValue';
 import { useResourceControls } from '../../../src/hooks/useResourceControls';
 import { bulkDeleteByIds } from '../../../src/lib/bulkDelete';
+import { nextSortOrder } from '../../../src/lib/sortOrder';
 import PaginationControls from '../../../src/components/PaginationControls';
 import AdminListToolbar from '../../../src/components/AdminListToolbar';
 import { Plus, Trash2, Loader2, ArrowUpDown, ChevronDown, ChevronRight } from 'lucide-react';
@@ -71,11 +72,12 @@ export default function ExperienceAdmin() {
 
   const handleAddWork = async () => {
     if (!supabase) return;
-    const newSortOrder = work.length > 0 ? Math.max(...work.map(w => w.sort_order)) + 1 : 1;
+    const newSortOrder = await nextSortOrder('work_experiences');
     const { data, error } = await supabase.from('work_experiences').insert([{
       period: 'New Period',
       title: 'New Position',
       company: 'New Company',
+      company_url: '',
       description: 'Description here',
       sort_order: newSortOrder
     }]).select().single();
@@ -89,11 +91,12 @@ export default function ExperienceAdmin() {
 
   const handleAddEdu = async () => {
     if (!supabase) return;
-    const newSortOrder = edu.length > 0 ? Math.max(...edu.map(e => e.sort_order)) + 1 : 1;
+    const newSortOrder = await nextSortOrder('education_history');
     const { data, error } = await supabase.from('education_history').insert([{
       period: 'New Period',
       title: 'New Degree',
       institution: 'New Institution',
+      institution_url: '',
       description: 'Description here',
       sort_order: newSortOrder
     }]).select().single();

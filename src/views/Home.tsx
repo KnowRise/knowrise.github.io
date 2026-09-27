@@ -28,6 +28,7 @@ export default function Home() {
     supabase
       .from('profile')
       .select('*')
+      .eq('id', 'primary')
       .single()
       .then(({ data }) => { if (data) setProfile(data as Profile); });
   }, []);
@@ -49,7 +50,7 @@ export default function Home() {
           
           <div 
             className="prose prose-sm md:prose-base max-w-none text-(--text-secondary) prose-a:text-(--green) prose-a:font-bold hover:prose-a:underline"
-            dangerouslySetInnerHTML={{ __html: marked.parse(profile.bio, { async: false }) as string }}
+            dangerouslySetInnerHTML={{ __html: marked.parse(profile.bio || '', { async: false }) as string }}
           />
 
           {/* Social + CV */}

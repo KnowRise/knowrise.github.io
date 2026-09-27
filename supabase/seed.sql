@@ -1,0 +1,2 @@
+-- Kosong dengan sengaja: tabel admins tidak boleh di-seed,
+-- supaya tidak ada email admin di dalam repo.

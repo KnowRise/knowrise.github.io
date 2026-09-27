@@ -10,15 +10,7 @@ import { bulkDeleteByIds } from '../../../src/lib/bulkDelete';
 import PaginationControls from '../../../src/components/PaginationControls';
 import AdminListToolbar from '../../../src/components/AdminListToolbar';
 import { Trash2, Loader2, Mail, Calendar, User, ArrowUpDown } from 'lucide-react';
-
-interface ContactMessage {
-  id: string;
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  created_at: string;
-}
+import type { ContactMessage } from '../../../src/types';
 
 export default function ContactAdmin() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
@@ -105,10 +97,12 @@ export default function ContactAdmin() {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-     return new Date(dateStr).toLocaleDateString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
-     });
+  const formatDate = (dateStr: string | null) => {
+     return dateStr
+       ? new Date(dateStr).toLocaleDateString('en-US', {
+           month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+         })
+       : '—';
   };
 
   return (

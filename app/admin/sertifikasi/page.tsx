@@ -9,6 +9,7 @@ import { usePagination } from '../../../src/hooks/usePagination';
 import { useDebouncedValue } from '../../../src/hooks/useDebouncedValue';
 import { useResourceControls } from '../../../src/hooks/useResourceControls';
 import { bulkDeleteByIds } from '../../../src/lib/bulkDelete';
+import { nextSortOrder } from '../../../src/lib/sortOrder';
 import PaginationControls from '../../../src/components/PaginationControls';
 import AdminListToolbar from '../../../src/components/AdminListToolbar';
 import { Plus, Trash2, ArrowUpDown, Loader2, ChevronDown, ChevronRight, FileText, Image as ImageIcon } from 'lucide-react';
@@ -37,7 +38,7 @@ export default function CertificationsAdmin() {
     const term = debouncedSearch.trim();
     if (term) {
       const esc = term.replace(/[%_]/g, (m) => '\\' + m);
-      query = query.or(`title.ilike.%${esc}%,issuer.ilike.%${esc}%`);
+      query = query.or(`title.ilike.%${esc}%,issuer.ilike.%${esc}%,credential_id.ilike.%${esc}%`);
     }
     const { data, count } = await query
       .order('sort_order', { ascending: orderDir === 'asc' })
@@ -49,10 +50,15 @@ export default function CertificationsAdmin() {
 
   const handleAdd = async () => {
     if (!supabase) return;
-    const newSortOrder = items.length > 0 ? Math.max(...items.map(i => i.sort_order)) + 1 : 1;
+    const newSortOrder = await nextSortOrder('certifications');
     const { data, error } = await supabase.from('certifications').insert([{
       title: 'New Certification',
       issuer: 'Issuer',
+      issue_date: null,
+      expiration_date: null,
+      credential_id: '',
+      credential_url: '',
+      image_url: '',
       sort_order: newSortOrder
     }]).select().single();
     if (!error && data) {
@@ -107,7 +113,7 @@ export default function CertificationsAdmin() {
     const term = debouncedSearch.trim();
     if (term) {
       const esc = term.replace(/[%_]/g, (m) => '\\' + m);
-      query = query.or(`title.ilike.%${esc}%,issuer.ilike.%${esc}%`);
+      query = query.or(`title.ilike.%${esc}%,issuer.ilike.%${esc}%,credential_id.ilike.%${esc}%`);
     }
     const { data } = await query;
     if (data) ctl.setSelectedIds((data as { id: string }[]).map((r) => r.id));
@@ -154,7 +160,7 @@ export default function CertificationsAdmin() {
         ) : (
           <div className="space-y-3">
             <AdminListToolbar
-              placeholder="Cari sertifikasi (judul/issuer)..."
+              placeholder="Cari sertifikasi (judul/issuer/ID)..."
               search={ctl.search}
               onSearch={ctl.setSearch}
               selectedCount={ctl.selected.size}

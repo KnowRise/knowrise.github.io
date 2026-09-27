@@ -1,4 +1,10 @@
 // ===== DATA TYPES =====
+//
+// created_at sengaja ditipekan `string | null`: di Postgres kolomnya
+// `TIMESTAMP WITH TIME ZONE DEFAULT NOW()` tanpa NOT NULL, jadi baris
+// lama yang dibuat sebelum default-nya ada bisa punya NULL. Tipe yang
+// non-null membuat kode berbohong di compile time tapi meledak runtime
+// saat dirender.
 
 export interface WorkExperience {
   id: string;
@@ -8,7 +14,7 @@ export interface WorkExperience {
   company_url: string | null;
   description: string;
   sort_order: number;
-  created_at: string;
+  created_at: string | null;
 }
 
 export interface Education {
@@ -19,7 +25,7 @@ export interface Education {
   institution_url: string | null;
   description: string;
   sort_order: number;
-  created_at: string;
+  created_at: string | null;
 }
 
 export interface Project {
@@ -30,7 +36,7 @@ export interface Project {
   project_url: string;
   tags: string[];
   sort_order: number;
-  created_at: string;
+  created_at: string | null;
 }
 
 export interface SkillCategory {
@@ -57,8 +63,8 @@ export interface BlogPost {
   tags: string[];
   is_published: boolean;
   published_at: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface Profile {
@@ -83,7 +89,16 @@ export interface Publication {
   doi_url: string | null;
   url: string | null;
   sort_order: number;
-  created_at: string;
+  created_at: string | null;
+}
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  created_at: string | null;
 }
 
 export interface HkiEntry {
@@ -95,11 +110,10 @@ export interface HkiEntry {
   holder: string | null;
   grant_date: string | null;
   description: string | null;
-  image_url: string | null;
   document_url: string | null;
   url: string | null;
   sort_order: number;
-  created_at: string;
+  created_at: string | null;
 }
 
 export interface Certification {
@@ -112,7 +126,7 @@ export interface Certification {
   credential_url: string | null;
   image_url: string | null;
   sort_order: number;
-  created_at: string;
+  created_at: string | null;
 }
 
 // ===== SETTINGS =====
@@ -133,7 +147,10 @@ export type MenuVisibility = Record<MenuKey, boolean>;
 export interface Settings {
   id: string;
   data: {
-    menu_visibility: Partial<MenuVisibility>;
+    // mergeSettings (src/lib/settings.ts) selalu mengisi seluruh 9 kunci
+    // dari MENU_KEYS, jadi ini bukan Partial di runtime meski baris
+    // di DB masih bisa jadi tidak lengkap.
+    menu_visibility: MenuVisibility;
     [key: string]: unknown;
   };
   updated_at: string;
