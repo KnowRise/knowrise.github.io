@@ -315,3 +315,4 @@ Workflow `.github/workflows/keep-alive.yml` menjalankan ping harian ke domain
 untuk mencegah Supabase project di-suspend, dan melakukan commit otomatis ke
 `docs/keepalive.log` kalau repository sudah lebih dari 30 hari tanpa commit
 (non-aktif = Massively Ignoring Inactivity di GitHub).
+ 
