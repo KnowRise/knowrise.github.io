@@ -263,6 +263,40 @@ Deploy lewat Vercel: repo ini connect ke project Vercel, setiap push ke `main`
 memicu build ulang. Domain kustom diatur di dashboard Vercel, bukan lewat file
 di repo.
 
+### Environment variable di Vercel
+
+Hanya dua, dan keduanya wajib:
+
+```
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+```
+
+Itu saja. `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_ID`,
+dan `ADMIN_EMAIL` **jangan** diisi di Vercel — tidak ada satu pun kode yang
+membacanya, jadi menambahkannya hanya memperbesar permukaan serang tanpa
+menambah fungsi. build juga tidak menjalankan migration, karena tidak ada hook
+`prebuild`/`postinstall`.
+
+Dua hal yang mudah salah di sini:
+
+1. **`NEXT_PUBLIC_*` di-inline saat build.** Menambah atau mengubahnya di
+   dashboard Vercel wajib deploy ulang. Restart container tidak mengubah
+   bundel yang sudah ter-build.
+2. **Env yang salah tidak bikin situs crash, tapi bikin basi.** `src/lib/supabase.ts`
+   mengembalikan `null` kalau env kosong, dan semua konsumen sudah punya
+   fallback: `getSettings()` memakai `DEFAULT_SETTINGS` (semua menu terlihat),
+   `app/layout.tsx` memakai nama/tagline hardcode plus `FALLBACK_PHOTO`. Gejalanya
+   situs terlihat normal tapi tidak pernah berubah setelah diedit dari panel
+   admin. Kalau itu terjadi, cek env Vercel dulu sebelum menuduh bug.
+
+Soal `service_role`: kode ini memang tidak pernah memakainya. Operasi tulis
+lewat API Read membawa JWT user, jadi `is_admin()` yang menentukan, bukan
+service role. Karena itu tidak ada variabel server-side yang perlu disimpan
+di Vercel.
+
+### GitHub Pages
+
 Situs ini **tidak** memakai GitHub Pages. Pages sudah dinonaktifkan di
 Settings → Pages (Source = None), jadi tab Actions tidak lagi menampilkan
 `pages build and deployment`.
