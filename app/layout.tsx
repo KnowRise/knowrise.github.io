@@ -89,7 +89,7 @@ export default async function RootLayout({
 
           <ClientLayoutWrapper>
             <Navbar settings={settings} />
-            <main className="flex-grow">
+            <main className="grow">
               {children}
             </main>
             <Footer />
