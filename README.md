@@ -251,9 +251,11 @@ backups/              Dump data pra-migration (gitignored, jangan di-commit)
 - Anon key memang dirancang publik dan dikirim ke browser; itu aman selama
   RLS benar. Jaga agar `service_role` key tidak pernah masuk ke kode
   client.
-- `next.config.mjs` hanya mengizinkan image dari Supabase Storage dan
-  `raw.githubusercontent.com`. Gambar dari luar harus diunggah lewat
-  FileUploader, bukan ditempel URL-nya.
+- `next.config.mjs` hanya mengizinkan image dari Supabase Storage
+  (`remotePatterns` cuma satu host). Gambar dari luar harus diunggah lewat
+  FileUploader, bukan ditempel URL-nya. Aset yang sudah ada di folder
+  `public/` lebih baik pakai path lokal, supaya tidak bergantung pada
+  branch di GitHub.
 - `backups/` berisi dump data termasuk `contact_messages`, jadi sudah
   masuk `.gitignore`. Jangan pernah di-commit.
 
@@ -297,19 +299,25 @@ di Vercel.
 
 ### GitHub Pages
 
-Situs ini **tidak** memakai GitHub Pages. Pages sudah dinonaktifkan di
-Settings → Pages (Source = None), jadi tab Actions tidak lagi menampilkan
-`pages build and deployment`.
+Situs ini **tidak** memakai GitHub Pages. Pages sudah dimatikan di Settings →
+Pages (Source = None) dan branch `gh-pages` sudah dihapus dari remote.
 
-Kalau tab Actions masih menampilkan run `pages-build-deployment` terakhir,
-itu riwayat run lama, bukan workflow yang sedang jalan.
+`pages-build-deployment` di tab Actions adalah workflow **bawaan** GitHub untuk
+Pages era lama. Kode filenya tidak pernah ada di repo — itu sebabnya
+`.github/workflows/` tidak punya YAML untuk itu. Workflow itu hanya berjalan
+selama Source masih "Deploy from a branch", jadi karena masih ada run
+`pages-build-deployment` yang muncul, itu tandanya Source **belum** None
+lagi. Run yang sudah selesai tetap tersimpan di riwayat dan tidak perlu
+dihapus manual.
 
-Branch `gh-pages` sendiri masih ada di remote karena penghapusannya
-gagal (shell non-interaktif tidak punya SSH key). Hapus manual:
+Kalau run itu muncul lagi padahal Source sudah None, cek dua hal: branch
+deploy masih terisi, dan `SITE_URL` di `app/layout.tsx` masih menunjuk ke
+domain `*.github.io` (metadata dan link preview ikut salah kalau begitu).
 
-```bash
-git push origin --delete gh-pages
-```
+Environment `gh-pages` di Settings → Environments boleh dihapus; itu sisa
+dari deployment Pages lama. Environment `production` **jangan** dihapus tanpa
+dicek lebih dulu — itu kemungkinan dipakai integrasi Vercel, dan menghapus
+environment yang punya protection rule bisa menahan deployment.
 
 Workflow `.github/workflows/keep-alive.yml` menjalankan ping harian ke domain
 untuk mencegah Supabase project di-suspend, dan melakukan commit otomatis ke

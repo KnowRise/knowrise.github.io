@@ -8,8 +8,19 @@ import { getSettings } from '../src/lib/settings';
 
 import type { Metadata } from 'next';
 
-const SITE_URL = 'https://knowrise.github.io';
-const FALLBACK_PHOTO = 'https://raw.githubusercontent.com/KnowRise/knowrise.github.io/main/public/img/MyFoto.png';
+// Domain produksi. Situs ini disajikan lewat Vercel; GitHub Pages sudah
+// dimatikan (Source = None) dan branch gh-pages sudah dihapus, jadi jangan
+// memakai domain *.github.io di sini. metadataBase, openGraph.url, dan
+// twitter.url semuanya diturunkan dari nilai ini, jadi kalau salah satu
+// berarti link preview orang mengarah ke domain yang tidak lagi melayani
+// situs.
+const SITE_URL = 'https://knowrise.my.id';
+
+// Path lokal, bukan URL raw.githubusercontent.com. File-nya ada di
+// public/img/MyFoto.png (ter-track di git) dan Next.js menyajikannya
+// sebagai /img/MyFoto.png, jadi tidak bergantung pada isi branch main
+// di GitHub dan tetap jalan kalau repo nanti jadi privat.
+const FALLBACK_PHOTO = '/img/MyFoto.png';
 
 export async function generateMetadata(): Promise<Metadata> {
   let fullName = 'Muhamad Rifaa Siraajuddin Sugandi';

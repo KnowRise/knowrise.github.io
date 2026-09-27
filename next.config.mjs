@@ -3,14 +3,18 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
-      // Supabase Storage bucket "media" (project hfvtjobqcxeslpubyajq)
+      // Supabase Storage bucket "media" (project hfvtjobqcxeslpubyajq).
+      // Satu-satunya host eksternal yang boleh dilayani optimizer. Host
+      // lain harus diunggah lewat FileUploader, bukan ditempel URL-nya.
       { protocol: 'https', hostname: 'hfvtjobqcxeslpubyajq.supabase.co' },
-      // Legacy GitHub-hosted assets (migrasi bertahap)
-      { protocol: 'https', hostname: 'raw.githubusercontent.com' },
+      // raw.githubusercontent.com sengaja tidak ada. Dulu dipakai untuk
+      // foto profil cadangan; sekarang path-nya lokal (/img/MyFoto.png
+      // dari folder public), jadi tidak ada alasan lagi membiarkannya
+      // masuk daftar origin yang diizinkan.
     ],
-    // Host tetap dua di atas, tapi optimizer tetap dikunci supaya file
-    // yang tidak terduga tidak bisa menyajikan HTML/SVG yang dieksekusi
-    // sebagai bagian dari origin kita sendiri.
+    // Origin sudah dikunci ke satu host di atas. Lapisan tambahan ini
+    // supaya file yang tidak terduga tidak bisa menyajikan HTML/SVG yang
+    // dieksekusi sebagai bagian dari origin kita sendiri.
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
