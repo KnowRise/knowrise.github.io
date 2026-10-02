@@ -319,8 +319,24 @@ dari deployment Pages lama. Environment `production` **jangan** dihapus tanpa
 dicek lebih dulu — itu kemungkinan dipakai integrasi Vercel, dan menghapus
 environment yang punya protection rule bisa menahan deployment.
 
-Workflow `.github/workflows/keep-alive.yml` menjalankan ping harian ke domain
-untuk mencegah Supabase project di-suspend, dan melakukan commit otomatis ke
-`docs/keepalive.log` kalau repository sudah lebih dari 30 hari tanpa commit
-(non-aktif = Massively Ignoring Inactivity di GitHub).
+### Supabase tidak di-suspend
+
+Project Supabase free akan di-pause kalau tidak ada aktivitas selama sekitar
+7 hari, dan yang dihitung adalah query yang benar-benar sampai ke
+Supabase — bukan request ke situs ini. Karena itu ada `app/api/health/route.ts`,
+sebuah route handler yang menjalankan satu query ringan ke tabel `settings` dan
+balas `{ ok: true }` (200) atau `{ ok: false, error }` (503). Panggil endpoint
+ini dari cron eksternal, **jangan** dari GitHub Actions: cron GitHub tidak
+punya jaminan waktu (delay 30–60 menit di jam sibuk, bisa drop) dan
+otomatis dimatikan setelah repo public tidak aktif 60 hari. Cron eksternal
+dijalankan oleh pihak ketiga, jadi kel continued-nya tidak bergantung pada
+repo ini tetap aktif.
+
+Awalnya `app/api/health` tidak ada dan keepalive dilakukan GitHub Actions yang
+mendorong `https://knowrise.my.id/`. Cara itu sempat berjalan sebagian: jalur
+`workflow_dispatch` sukses, tapi event `schedule` tidak pernah terpicu sama
+sekali. Karena itu jangan ping `/` — halaman itu `force-dynamic`
+(`app/page.tsx`) dan setiap hit menjalankan tiga query PostgREST (`profile` di
+`app/layout.tsx`, `settings` di layout, dan `settings` lagi lewat
+`app/page.tsx`). Endpoint health hanya satu.
  
